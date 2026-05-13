@@ -38,3 +38,12 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Personal docs ###
+docs/*.md
+plan/
+CLAUDE.md
+
+### Local tool configs ###
+.claude/
+.omc/
