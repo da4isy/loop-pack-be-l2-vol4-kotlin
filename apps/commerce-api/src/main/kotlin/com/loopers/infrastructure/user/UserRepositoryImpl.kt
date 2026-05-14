@@ -9,4 +9,6 @@ class UserRepositoryImpl(
     private val userJpaRepository: UserJpaRepository,
 ) : UserRepository {
     override fun save(user: UserModel): UserModel = userJpaRepository.save(user)
+
+    override fun existsByLoginId(loginId: String): Boolean = userJpaRepository.existsByLoginId(loginId)
 }

@@ -42,6 +42,7 @@ class UserServiceIntegrationTest @Autowired constructor(
                 birthDate = command.birthDate,
                 email = command.email,
             )
+            every { userRepository.existsByLoginId(command.loginId) } returns false andThen true
             every { userRepository.save(any()) } returns savedUser
             userService.signup(command)
 
