@@ -14,4 +14,10 @@ class UserFacade(
         val user = userService.signup(command)
         return UserInfo.from(user)
     }
+
+    @Transactional(readOnly = true)
+    fun getMe(loginId: String, password: String): MyInfo {
+        val user = userService.getMe(loginId, password)
+        return MyInfo.from(user)
+    }
 }

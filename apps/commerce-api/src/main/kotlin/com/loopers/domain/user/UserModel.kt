@@ -34,4 +34,6 @@ class UserModel(
     @Column(name = "email", nullable = false)
     var email: String = email
         protected set
+
+    fun maskedName(): String = if (name.length <= 1) "*" else name.dropLast(1) + "*"
 }

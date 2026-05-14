@@ -29,4 +29,8 @@ class UserService(
         )
         return userRepository.save(user)
     }
+
+    fun getMe(loginId: String, password: String): UserModel {
+        return userRepository.findByLoginId(loginId)!!
+    }
 }
