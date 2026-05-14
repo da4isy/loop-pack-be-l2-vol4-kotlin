@@ -54,5 +54,32 @@ class SignupE2ETest @Autowired constructor(
             response.body?.data?.loginId shouldBe "da4isy"
             response.body?.data?.name shouldBe "정다희"
         }
+
+        @Test
+        fun returnsConflict_whenLoginIdAlreadyExists() {
+            // given
+            val request = UserDto.SignupRequest(
+                loginId = "da4isy",
+                password = "Daisyyyy1@@!",
+                name = "정다희",
+                birthDate = "1995-12-03",
+                email = "dahee.jeong123@example.com",
+            )
+            val responseType =
+                object : ParameterizedTypeReference<ApiResponse<UserDto.SignupResponse>>() {}
+            testRestTemplate.exchange("/api/v1/users", HttpMethod.POST, HttpEntity(request), responseType)
+
+            // when
+            val response = testRestTemplate.exchange(
+                "/api/v1/users",
+                HttpMethod.POST,
+                HttpEntity(request),
+                responseType,
+            )
+
+            // then
+            response.statusCode shouldBe HttpStatus.CONFLICT
+            response.body?.meta?.result shouldBe ApiResponse.Metadata.Result.FAIL
+        }
     }
 }
