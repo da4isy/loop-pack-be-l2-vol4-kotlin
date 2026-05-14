@@ -224,4 +224,65 @@ class UserServiceIntegrationTest @Autowired constructor(
                 .errorType shouldBe ErrorType.UNAUTHORIZED
         }
     }
+
+    @Nested
+    inner class ChangePassword {
+
+        @Test
+        fun throw_whenCurrentPasswordMismatch() {
+            // given
+            val savedUser = UserModel(
+                loginId = "da4isy",
+                password = "encoded-Daisyyyy1@@!",
+                name = "정다희",
+                birthDate = "1995-12-03",
+                email = "dahee.jeong123@example.com",
+            )
+            every { userRepository.findByLoginId("da4isy") } returns savedUser
+            every { userRepository.save(any()) } answers { firstArg() }
+
+            // when & then
+            shouldThrow<CoreException> {
+                userService.changePassword("da4isy", "wrong-current", "NewPass2@@")
+            }.errorType shouldBe ErrorType.UNAUTHORIZED
+        }
+
+        @Test
+        fun throw_whenNewPasswordSameAsCurrent() {
+            // given
+            val savedUser = UserModel(
+                loginId = "da4isy",
+                password = "encoded-Daisyyyy1@@!",
+                name = "정다희",
+                birthDate = "1995-12-03",
+                email = "dahee.jeong123@example.com",
+            )
+            every { userRepository.findByLoginId("da4isy") } returns savedUser
+            every { userRepository.save(any()) } answers { firstArg() }
+
+            // when & then
+            shouldThrow<CoreException> {
+                userService.changePassword("da4isy", "Daisyyyy1@@!", "Daisyyyy1@@!")
+            }.errorType shouldBe ErrorType.BAD_REQUEST
+        }
+
+        @Test
+        fun throw_whenNewPasswordViolatesRule() {
+            // given
+            val savedUser = UserModel(
+                loginId = "da4isy",
+                password = "encoded-Daisyyyy1@@!",
+                name = "정다희",
+                birthDate = "1995-12-03",
+                email = "dahee.jeong123@example.com",
+            )
+            every { userRepository.findByLoginId("da4isy") } returns savedUser
+            every { userRepository.save(any()) } answers { firstArg() }
+
+            // when & then
+            shouldThrow<CoreException> {
+                userService.changePassword("da4isy", "Daisyyyy1@@!", "abc")
+            }.errorType shouldBe ErrorType.BAD_REQUEST
+        }
+    }
 }

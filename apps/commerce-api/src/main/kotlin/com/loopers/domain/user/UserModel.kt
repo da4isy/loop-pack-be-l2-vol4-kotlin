@@ -36,4 +36,8 @@ class UserModel(
         protected set
 
     fun maskedName(): String = if (name.length <= 1) "*" else name.dropLast(1) + "*"
+
+    fun changePassword(newEncodedPassword: String) {
+        this.password = newEncodedPassword
+    }
 }

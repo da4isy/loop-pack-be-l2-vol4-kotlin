@@ -20,4 +20,9 @@ class UserFacade(
         val user = userService.getMe(loginId, password)
         return MyInfo.from(user)
     }
+
+    @Transactional
+    fun changePassword(loginId: String, currentPassword: String, newPassword: String) {
+        userService.changePassword(loginId, currentPassword, newPassword)
+    }
 }

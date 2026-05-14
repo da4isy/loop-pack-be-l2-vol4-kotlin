@@ -38,4 +38,18 @@ class UserService(
         }
         return user
     }
+
+    fun changePassword(loginId: String, currentPassword: String, newPassword: String) {
+        val user = userRepository.findByLoginId(loginId)
+            ?: throw CoreException(errorType = ErrorType.UNAUTHORIZED, customMessage = "인증에 실패했습니다.")
+        if (!passwordEncoder.matches(currentPassword, user.password)) {
+            throw CoreException(errorType = ErrorType.UNAUTHORIZED, customMessage = "현재 비밀번호가 일치하지 않습니다.")
+        }
+        if (currentPassword == newPassword) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "현재 비밀번호와 새 비밀번호가 같습니다.")
+        }
+        Password(newPassword, user.birthDate)
+        user.changePassword(passwordEncoder.encode(newPassword))
+        userRepository.save(user)
+    }
 }
