@@ -16,6 +16,9 @@ class UserService(
         Password(command.password, command.birthDate)
         Email(command.email)
         BirthDate(command.birthDate)
+        if (command.name.isBlank()) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "이름은 공백일 수 없습니다.")
+        }
         val user = UserModel(
             loginId = command.loginId,
             password = command.password,
