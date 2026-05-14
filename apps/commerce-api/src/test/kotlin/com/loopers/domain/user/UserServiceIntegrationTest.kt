@@ -50,5 +50,22 @@ class UserServiceIntegrationTest @Autowired constructor(
             shouldThrow<CoreException> { userService.signup(command) }
                 .errorType shouldBe ErrorType.CONFLICT
         }
+
+        @Test
+        fun throw_whenPasswordViolatesRule() {
+            // given
+            val command = SignupCommand(
+                loginId = "da4isy",
+                password = "abc",
+                name = "정다희",
+                birthDate = "1995-12-03",
+                email = "dahee.jeong123@example.com",
+            )
+            every { userRepository.existsByLoginId(any()) } returns false
+
+            // when & then
+            shouldThrow<CoreException> { userService.signup(command) }
+                .errorType shouldBe ErrorType.BAD_REQUEST
+        }
     }
 }
