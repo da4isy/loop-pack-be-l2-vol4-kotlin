@@ -142,5 +142,30 @@ class UserServiceIntegrationTest @Autowired constructor(
             shouldThrow<CoreException> { userService.signup(command) }
                 .errorType shouldBe ErrorType.BAD_REQUEST
         }
+
+        @Test
+        fun throw_whenNameViolatesRule() {
+            // given
+            val command = SignupCommand(
+                loginId = "da4isy",
+                password = "Daisyyyy1@@!",
+                name = "   ",
+                birthDate = "1995-12-03",
+                email = "dahee.jeong123@example.com",
+            )
+            val savedUser = UserModel(
+                loginId = command.loginId,
+                password = command.password,
+                name = command.name,
+                birthDate = command.birthDate,
+                email = command.email,
+            )
+            every { userRepository.existsByLoginId(any()) } returns false
+            every { userRepository.save(any()) } returns savedUser
+
+            // when & then
+            shouldThrow<CoreException> { userService.signup(command) }
+                .errorType shouldBe ErrorType.BAD_REQUEST
+        }
     }
 }
