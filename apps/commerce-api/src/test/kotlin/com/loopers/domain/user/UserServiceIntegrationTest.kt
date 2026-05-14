@@ -31,6 +31,9 @@ class UserServiceIntegrationTest @Autowired constructor(
     @BeforeEach
     fun setUp() {
         every { passwordEncoder.encode(any()) } answers { "encoded-${firstArg<String>()}" }
+        every { passwordEncoder.matches(any(), any()) } answers {
+            "encoded-${firstArg<String>()}" == secondArg<String>()
+        }
     }
 
     @Nested
