@@ -38,4 +38,10 @@ class UserService(
         }
         return user
     }
+
+    fun changePassword(loginId: String, currentPassword: String, newPassword: String) {
+        val user = userRepository.findByLoginId(loginId)!!
+        user.changePassword(passwordEncoder.encode(newPassword))
+        userRepository.save(user)
+    }
 }
