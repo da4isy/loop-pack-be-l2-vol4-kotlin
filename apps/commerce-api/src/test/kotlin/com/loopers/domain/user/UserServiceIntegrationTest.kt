@@ -92,5 +92,30 @@ class UserServiceIntegrationTest @Autowired constructor(
             shouldThrow<CoreException> { userService.signup(command) }
                 .errorType shouldBe ErrorType.BAD_REQUEST
         }
+
+        @Test
+        fun throw_whenEmailViolatesRule() {
+            // given
+            val command = SignupCommand(
+                loginId = "da4isy",
+                password = "Daisyyyy1@@!",
+                name = "정다희",
+                birthDate = "1995-12-03",
+                email = "invalid-email",
+            )
+            val savedUser = UserModel(
+                loginId = command.loginId,
+                password = command.password,
+                name = command.name,
+                birthDate = command.birthDate,
+                email = command.email,
+            )
+            every { userRepository.existsByLoginId(any()) } returns false
+            every { userRepository.save(any()) } returns savedUser
+
+            // when & then
+            shouldThrow<CoreException> { userService.signup(command) }
+                .errorType shouldBe ErrorType.BAD_REQUEST
+        }
     }
 }
