@@ -15,6 +15,7 @@ class UserService(
         LoginId(command.loginId)
         Password(command.password, command.birthDate)
         Email(command.email)
+        BirthDate(command.birthDate)
         val user = UserModel(
             loginId = command.loginId,
             password = command.password,
