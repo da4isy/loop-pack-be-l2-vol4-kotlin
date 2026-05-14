@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 @Component
 class UserService(
     private val userRepository: UserRepository,
+    private val passwordEncoder: PasswordEncoder,
 ) {
     fun signup(command: SignupCommand): UserModel {
         if (userRepository.existsByLoginId(command.loginId)) {
@@ -21,7 +22,7 @@ class UserService(
         }
         val user = UserModel(
             loginId = command.loginId,
-            password = command.password,
+            password = passwordEncoder.encode(command.password),
             name = command.name,
             birthDate = command.birthDate,
             email = command.email,

@@ -8,6 +8,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.slot
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -23,6 +24,14 @@ class UserServiceIntegrationTest @Autowired constructor(
 
     @MockkBean
     lateinit var userRepository: UserRepository
+
+    @MockkBean
+    lateinit var passwordEncoder: PasswordEncoder
+
+    @BeforeEach
+    fun setUp() {
+        every { passwordEncoder.encode(any()) } answers { "encoded-${firstArg<String>()}" }
+    }
 
     @Nested
     inner class Signup {
