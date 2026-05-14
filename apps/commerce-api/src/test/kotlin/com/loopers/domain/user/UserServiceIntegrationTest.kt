@@ -31,6 +31,9 @@ class UserServiceIntegrationTest @Autowired constructor(
     @BeforeEach
     fun setUp() {
         every { passwordEncoder.encode(any()) } answers { "encoded-${firstArg<String>()}" }
+        every { passwordEncoder.matches(any(), any()) } answers {
+            "encoded-${firstArg<String>()}" == secondArg<String>()
+        }
     }
 
     @Nested
@@ -198,6 +201,27 @@ class UserServiceIntegrationTest @Autowired constructor(
 
             // then
             savedSlot.captured.password shouldNotBe command.password
+        }
+    }
+
+    @Nested
+    inner class GetMe {
+
+        @Test
+        fun throw_whenPasswordMismatch() {
+            // given
+            val savedUser = UserModel(
+                loginId = "da4isy",
+                password = "encoded-Daisyyyy1@@!",
+                name = "정다희",
+                birthDate = "1995-12-03",
+                email = "dahee.jeong123@example.com",
+            )
+            every { userRepository.findByLoginId("da4isy") } returns savedUser
+
+            // when & then
+            shouldThrow<CoreException> { userService.getMe("da4isy", "wrong-password") }
+                .errorType shouldBe ErrorType.UNAUTHORIZED
         }
     }
 }

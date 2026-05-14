@@ -29,4 +29,13 @@ class UserService(
         )
         return userRepository.save(user)
     }
+
+    fun getMe(loginId: String, password: String): UserModel {
+        val user = userRepository.findByLoginId(loginId)
+            ?: throw CoreException(errorType = ErrorType.UNAUTHORIZED, customMessage = "인증에 실패했습니다.")
+        if (!passwordEncoder.matches(password, user.password)) {
+            throw CoreException(errorType = ErrorType.UNAUTHORIZED, customMessage = "인증에 실패했습니다.")
+        }
+        return user
+    }
 }
