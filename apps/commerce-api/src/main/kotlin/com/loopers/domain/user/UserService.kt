@@ -12,6 +12,7 @@ class UserService(
         if (userRepository.existsByLoginId(command.loginId)) {
             throw CoreException(errorType = ErrorType.CONFLICT, customMessage = "이미 사용 중인 로그인 ID 입니다.")
         }
+        Password(command.password, command.birthDate)
         val user = UserModel(
             loginId = command.loginId,
             password = command.password,
