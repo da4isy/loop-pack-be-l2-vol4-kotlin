@@ -5,7 +5,9 @@ import com.loopers.support.error.ErrorType
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.mockk.every
+import io.mockk.slot
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -166,6 +168,27 @@ class UserServiceIntegrationTest @Autowired constructor(
             // when & then
             shouldThrow<CoreException> { userService.signup(command) }
                 .errorType shouldBe ErrorType.BAD_REQUEST
+        }
+
+        @Test
+        fun password_isEncoded_whenSignup() {
+            // given
+            val command = SignupCommand(
+                loginId = "da4isy",
+                password = "Daisyyyy1@@!",
+                name = "정다희",
+                birthDate = "1995-12-03",
+                email = "dahee.jeong123@example.com",
+            )
+            val savedSlot = slot<UserModel>()
+            every { userRepository.existsByLoginId(any()) } returns false
+            every { userRepository.save(capture(savedSlot)) } answers { savedSlot.captured }
+
+            // when
+            userService.signup(command)
+
+            // then
+            savedSlot.captured.password shouldNotBe command.password
         }
     }
 }
