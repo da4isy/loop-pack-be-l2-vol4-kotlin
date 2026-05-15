@@ -66,74 +66,7 @@ class UserServiceIntegrationTest @Autowired constructor(
         }
 
         @Test
-        fun throw_whenPasswordViolatesRule() {
-            // given
-            val command = SignupCommand(
-                loginId = "da4isy",
-                password = "abc",
-                name = "정다희",
-                birthDate = "1995-12-03",
-                email = "dahee.jeong123@example.com",
-            )
-            every { userRepository.existsByLoginId(any()) } returns false
-
-            // when & then
-            shouldThrow<CoreException> { userService.signup(command) }
-                .errorType shouldBe ErrorType.BAD_REQUEST
-        }
-
-        @Test
-        fun throw_whenLoginIdViolatesRule() {
-            // given
-            val command = SignupCommand(
-                loginId = "da4isy!",
-                password = "Daisyyyy1@@!",
-                name = "정다희",
-                birthDate = "1995-12-03",
-                email = "dahee.jeong123@example.com",
-            )
-            val savedUser = UserModel(
-                loginId = command.loginId,
-                password = command.password,
-                name = command.name,
-                birthDate = command.birthDate,
-                email = command.email,
-            )
-            every { userRepository.existsByLoginId(any()) } returns false
-            every { userRepository.save(any()) } returns savedUser
-
-            // when & then
-            shouldThrow<CoreException> { userService.signup(command) }
-                .errorType shouldBe ErrorType.BAD_REQUEST
-        }
-
-        @Test
-        fun throw_whenEmailViolatesRule() {
-            // given
-            val command = SignupCommand(
-                loginId = "da4isy",
-                password = "Daisyyyy1@@!",
-                name = "정다희",
-                birthDate = "1995-12-03",
-                email = "invalid-email",
-            )
-            val savedUser = UserModel(
-                loginId = command.loginId,
-                password = command.password,
-                name = command.name,
-                birthDate = command.birthDate,
-                email = command.email,
-            )
-            every { userRepository.existsByLoginId(any()) } returns false
-            every { userRepository.save(any()) } returns savedUser
-
-            // when & then
-            shouldThrow<CoreException> { userService.signup(command) }
-                .errorType shouldBe ErrorType.BAD_REQUEST
-        }
-
-        @Test
-        fun throw_whenBirthDateViolatesRule() {
+        fun throw_whenBirthDateInFuture() {
             // given
             val command = SignupCommand(
                 loginId = "da4isy",
@@ -142,40 +75,7 @@ class UserServiceIntegrationTest @Autowired constructor(
                 birthDate = "9999-12-31",
                 email = "dahee.jeong123@example.com",
             )
-            val savedUser = UserModel(
-                loginId = command.loginId,
-                password = command.password,
-                name = command.name,
-                birthDate = command.birthDate,
-                email = command.email,
-            )
             every { userRepository.existsByLoginId(any()) } returns false
-            every { userRepository.save(any()) } returns savedUser
-
-            // when & then
-            shouldThrow<CoreException> { userService.signup(command) }
-                .errorType shouldBe ErrorType.BAD_REQUEST
-        }
-
-        @Test
-        fun throw_whenNameViolatesRule() {
-            // given
-            val command = SignupCommand(
-                loginId = "da4isy",
-                password = "Daisyyyy1@@!",
-                name = "   ",
-                birthDate = "1995-12-03",
-                email = "dahee.jeong123@example.com",
-            )
-            val savedUser = UserModel(
-                loginId = command.loginId,
-                password = command.password,
-                name = command.name,
-                birthDate = command.birthDate,
-                email = command.email,
-            )
-            every { userRepository.existsByLoginId(any()) } returns false
-            every { userRepository.save(any()) } returns savedUser
 
             // when & then
             shouldThrow<CoreException> { userService.signup(command) }
@@ -263,25 +163,6 @@ class UserServiceIntegrationTest @Autowired constructor(
             // when & then
             shouldThrow<CoreException> {
                 userService.changePassword("da4isy", "Daisyyyy1@@!", "Daisyyyy1@@!")
-            }.errorType shouldBe ErrorType.BAD_REQUEST
-        }
-
-        @Test
-        fun throw_whenNewPasswordViolatesRule() {
-            // given
-            val savedUser = UserModel(
-                loginId = "da4isy",
-                password = "encoded-Daisyyyy1@@!",
-                name = "정다희",
-                birthDate = "1995-12-03",
-                email = "dahee.jeong123@example.com",
-            )
-            every { userRepository.findByLoginId("da4isy") } returns savedUser
-            every { userRepository.save(any()) } answers { firstArg() }
-
-            // when & then
-            shouldThrow<CoreException> {
-                userService.changePassword("da4isy", "Daisyyyy1@@!", "abc")
             }.errorType shouldBe ErrorType.BAD_REQUEST
         }
     }

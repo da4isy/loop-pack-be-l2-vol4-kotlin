@@ -2,6 +2,7 @@ package com.loopers.interfaces.api.user
 
 import com.loopers.application.user.UserFacade
 import com.loopers.interfaces.api.ApiResponse
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -16,7 +17,7 @@ class UserController(
     private val userFacade: UserFacade,
 ) {
     @PostMapping
-    fun signup(@RequestBody request: UserDto.SignupRequest): ApiResponse<UserDto.SignupResponse> {
+    fun signup(@Valid @RequestBody request: UserDto.SignupRequest): ApiResponse<UserDto.SignupResponse> {
         return userFacade.signup(request.toCommand())
             .let { UserDto.SignupResponse.from(it) }
             .let { ApiResponse.success(it) }
@@ -36,7 +37,7 @@ class UserController(
     fun changePassword(
         @RequestHeader("X-Loopers-LoginId") loginId: String,
         @RequestHeader("X-Loopers-LoginPw") password: String,
-        @RequestBody request: UserDto.ChangePasswordRequest,
+        @Valid @RequestBody request: UserDto.ChangePasswordRequest,
     ): ApiResponse<Any> {
         userFacade.changePassword(loginId, request.currentPassword, request.newPassword)
         return ApiResponse.success()
