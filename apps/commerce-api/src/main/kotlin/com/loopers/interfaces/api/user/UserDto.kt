@@ -1,8 +1,7 @@
 package com.loopers.interfaces.api.user
 
-import com.loopers.application.user.MyInfo
-import com.loopers.application.user.UserInfo
 import com.loopers.domain.user.SignupCommand
+import com.loopers.domain.user.UserModel
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
@@ -46,11 +45,11 @@ class UserDto {
         val email: String,
     ) {
         companion object {
-            fun from(info: UserInfo) = SignupResponse(
-                loginId = info.loginId,
-                name = info.name,
-                birthDate = info.birthDate,
-                email = info.email,
+            fun from(model: UserModel) = SignupResponse(
+                loginId = model.loginId,
+                name = model.name,
+                birthDate = model.birthDate,
+                email = model.email,
             )
         }
     }
@@ -62,11 +61,11 @@ class UserDto {
         val email: String,
     ) {
         companion object {
-            fun from(info: MyInfo) = GetMeResponse(
-                loginId = info.loginId,
-                name = info.maskedName,
-                birthDate = info.birthDate,
-                email = info.email,
+            fun from(model: UserModel) = GetMeResponse(
+                loginId = model.loginId,
+                name = model.maskedName(),
+                birthDate = model.birthDate,
+                email = model.email,
             )
         }
     }
