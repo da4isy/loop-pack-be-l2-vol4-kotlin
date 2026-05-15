@@ -13,21 +13,7 @@ class UserService(
         if (userRepository.existsByLoginId(command.loginId)) {
             throw CoreException(errorType = ErrorType.CONFLICT, customMessage = "이미 사용 중인 로그인 ID 입니다.")
         }
-        LoginId(command.loginId)
-        Password(command.password, command.birthDate)
-        Email(command.email)
-        BirthDate(command.birthDate)
-        if (command.name.isBlank()) {
-            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "이름은 공백일 수 없습니다.")
-        }
-        val user = UserModel(
-            loginId = command.loginId,
-            password = passwordEncoder.encode(command.password),
-            name = command.name,
-            birthDate = command.birthDate,
-            email = command.email,
-        )
-        return userRepository.save(user)
+        return userRepository.save(UserModel.create(command, passwordEncoder))
     }
 
     fun getMe(loginId: String, password: String): UserModel {
@@ -45,11 +31,7 @@ class UserService(
         if (!passwordEncoder.matches(currentPassword, user.password)) {
             throw CoreException(errorType = ErrorType.UNAUTHORIZED, customMessage = "현재 비밀번호가 일치하지 않습니다.")
         }
-        if (currentPassword == newPassword) {
-            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "현재 비밀번호와 새 비밀번호가 같습니다.")
-        }
-        Password(newPassword, user.birthDate)
-        user.changePassword(passwordEncoder.encode(newPassword))
+        user.changePassword(currentPassword, newPassword, passwordEncoder)
         userRepository.save(user)
     }
 }
