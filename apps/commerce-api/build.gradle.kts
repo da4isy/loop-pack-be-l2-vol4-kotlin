@@ -10,6 +10,9 @@ dependencies {
     implementation(project(":supports:logging"))
     implementation(project(":supports:monitoring"))
 
+    // password encoder
+    implementation("at.favre.lib:bcrypt:0.10.2")
+
     // web
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
