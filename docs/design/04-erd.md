@@ -49,6 +49,8 @@ erDiagram
         bigint id PK "NOT NULL, AUTO_INCREMENT"
         bigint user_id FK "NOT NULL, users.id"
         bigint total_price "NOT NULL, 주문 총액"
+        varchar payment_status "NOT NULL, PAID/FAILED"
+        varchar payment_key "NULL, 외부 결제 키"
         timestamp ordered_at "NOT NULL, 주문 시각"
         timestamp created_at "NOT NULL"
         timestamp updated_at "NOT NULL"
@@ -89,7 +91,7 @@ erDiagram
 유저-상품 간 좋아요 관계. `(user_id, product_id)` unique constraint로 멱등성 보장. soft delete 없음 — 좋아요 취소는 물리 삭제.
 
 ### orders
-주문 건. `total_price`는 OrderItem 합산 값. `ordered_at`은 주문 시각 (created_at과 별도 관리). soft delete 없음 — 주문은 절대 안 지운다.
+주문 건. `total_price`는 OrderItem 합산 값. `payment_status`는 결제 상태 (PAID/FAILED), `payment_key`는 외부 PG 결제 키 (mock에서는 null). `ordered_at`은 주문 시각 (created_at과 별도 관리). soft delete 없음 — 주문은 절대 안 지운다.
 
 ### order_items
 주문 내 개별 항목. `product_id`는 원본 추적용 FK. 실제 데이터는 스냅샷 필드(`product_price`, `product_name`, `brand_name`)에 주문 시점 값을 복사해서 넣는다.
@@ -139,6 +141,6 @@ erDiagram
 | likeCount 조회 성능 | 매번 COUNT 쿼리 | Product.likeCount 반정규화 |
 | 주문 항목별 UPDATE loop | 단건씩 처리 | 벌크 UPDATE 전환 |
 | 브랜드 삭제 연쇄 의존 | BrandService -> ProductService 직접 호출 | 도메인 이벤트로 분리 |
-| 결제 연동 시 재고 복구 | 미구현 (결제 없음) | 보상 트랜잭션 / Saga 패턴 |
+| 결제 연동 | MockPaymentClient (항상 성공) | PG 모듈 교체 시 보상 트랜잭션 / Saga 패턴 |
 | 삭제된 상품의 좋아요 조회 | soft delete된 상품도 좋아요 유지 | "삭제된 상품입니다" 표시 처리 |
 | 어드민 식별이 헤더 기반 | `X-Loopers-Ldap` 헤더만으로 식별, 인증 없음 | RBAC(Role-Based Access Control) 도입 + 어드민 행위 audit log |

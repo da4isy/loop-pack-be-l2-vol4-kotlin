@@ -100,6 +100,7 @@ sequenceDiagram
     participant Controller
     participant OrderFacade
     participant ProductService
+    participant PaymentClient
     participant OrderService
     participant ProductRepo
     participant OrderRepo
@@ -119,18 +120,27 @@ sequenceDiagram
         Note right of ProductRepo: UPDATE WHERE stock >= qty / 0 rows = out of stock
     end
 
-    OrderFacade->>OrderService: createOrder(user, items, snapshots)
-    OrderService->>OrderRepo: save(Order + OrderItems)
-    Note right of OrderService: snapshot productName/price/brandName into OrderItem
+    OrderFacade->>PaymentClient: pay(userId, totalPrice)
+    Note right of PaymentClient: Mock: always returns success
+
+    alt payment success
+        OrderFacade->>OrderService: createOrder(user, items, snapshots, paymentKey)
+        OrderService->>OrderRepo: save(Order + OrderItems)
+        Note right of OrderService: snapshot productName/price/brandName into OrderItem
+    else payment failed
+        Note right of OrderFacade: throw → rollback (stock restored)
+    end
 
     OrderFacade-->>Controller: OrderInfo
     Controller-->>Client: 200 OK
 ```
 
 ### 핵심 결정
-- **OrderFacade**가 ProductService + OrderService를 조율 (Application 레이어의 책임)
+- **OrderFacade**가 ProductService + PaymentClient + OrderService를 조율 (Application 레이어의 책임)
 - 재고: 조건부 UPDATE (`WHERE stock >= qty`) — 음수 재고 불가능
 - 하나라도 실패하면 전체 주문 롤백
+- **결제**: PaymentClient 인터페이스 → 지금은 MockPaymentClient (항상 성공). PG 모듈 들어오면 구현체만 교체.
+- **결제 실패 시**: @Transactional 안에 있으니 롤백하면 재고도 자동 복구. 실 PG 연동하면 보상 트랜잭션으로 전환해야 함.
 - **스냅샷**: productPrice, productName, brandName을 OrderItem에 복사
 - **리스크**: 항목별 UPDATE loop (벌크 최적화는 나중에 필요 시 전환)
 
@@ -150,7 +160,13 @@ sequenceDiagram
 - OrderItem에 주문 시점 가격이 스냅샷으로 남아있으니 영향 없음
 - **검증 완료**: `snapshotFrom(product, brand)` 시점의 값이 그대로 남아있음
 
-### 시나리오 4: 유저가 좋아요 버튼을 빠르게 두 번 탭
+### 시나리오 4: 재고 차감 후 결제 실패
+- 재고 차감 완료 → PaymentClient.pay() 실패 → 예외 발생
+- @Transactional 롤백으로 재고 자동 복구
+- **검증 완료**: 다이어그램의 `payment failed → rollback (stock restored)` 분기로 커버됨
+- **주의**: 실 PG 연동 시에는 외부 호출이 트랜잭션 밖이므로 보상 트랜잭션 필요
+
+### 시나리오 5: 유저가 좋아요 버튼을 빠르게 두 번 탭
 - 첫 번째 요청: save 성공
 - 두 번째 요청: 이미 존재 -> 아무것도 안 함 -> 200 OK
 - 동시 도착 시: unique constraint가 DuplicateKeyException -> catch -> 200 OK

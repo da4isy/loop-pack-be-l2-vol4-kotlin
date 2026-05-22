@@ -26,6 +26,7 @@
 | Like | 유저가 상품에 누르는 좋아요 | 찜/북마크 아님 |
 | Order | 주문 건 (1회 결제 단위) | |
 | OrderItem | 주문 내 개별 상품 항목 | 주문 시점 스냅샷 포함 |
+| PaymentClient | 외부 결제 시스템 연동 인터페이스 | 지금은 mock, 나중에 PG 모듈로 교체 |
 | Soft Delete | `deletedAt` 필드로 논리 삭제 | 물리 삭제 없음 |
 
 ---
@@ -114,7 +115,9 @@
 - **부분 실패**: 하나라도 재고 부족이면 전체 주문 롤백. "품절된 상품이 포함되어 있습니다."
 - **스냅샷**: OrderItem에 productPrice, productName, brandName을 주문 시점 값으로 복사. 원본이 바뀌거나 삭제돼도 주문 이력은 그대로 남는다.
 - **주문 조회 필터**: orderedAt 기준 기간 필터.
-- **OrderFacade**: ProductService + OrderService를 조율하는 Application 레이어 책임.
+- **OrderFacade**: ProductService + PaymentClient + OrderService를 조율하는 Application 레이어 책임.
+- **결제**: PaymentClient 인터페이스로 추상화. 지금은 MockPaymentClient가 항상 성공 반환. 나중에 PG 모듈 들어오면 구현체만 교체.
+- **결제 실패 시**: @Transactional 롤백으로 재고 자동 복구. 실 PG 연동 시 보상 트랜잭션으로 전환.
 
 ---
 
@@ -123,7 +126,7 @@
 | 항목 | 이유 |
 |------|------|
 | 회원가입/로그인 | 헤더 식별로 대체 |
-| 결제 | 추후 개발 (현재는 주문 생성 = 결제 완료로 간주) |
+| 실제 결제 연동 | MockPaymentClient로 대체 (PG 모듈 제공 시 구현체 교체) |
 | 검색 | 목록 조회 + 정렬로 대체 |
 | 장바구니 | 요구사항 범위 밖 |
 | 알림 | 요구사항 범위 밖 |
