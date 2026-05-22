@@ -45,5 +45,6 @@ plan/
 CLAUDE.md
 
 ### Local tool configs ###
-.claude/
+.claude/settings.local.json
+.claude/skills/kent-beck-tdd/
 .omc/
