@@ -141,3 +141,4 @@ erDiagram
 | 브랜드 삭제 연쇄 의존 | BrandService -> ProductService 직접 호출 | 도메인 이벤트로 분리 |
 | 결제 연동 시 재고 복구 | 미구현 (결제 없음) | 보상 트랜잭션 / Saga 패턴 |
 | 삭제된 상품의 좋아요 조회 | soft delete된 상품도 좋아요 유지 | "삭제된 상품입니다" 표시 처리 |
+| 어드민 식별이 헤더 기반 | `X-Loopers-Ldap` 헤더만으로 식별, 인증 없음 | RBAC(Role-Based Access Control) 도입 + 어드민 행위 audit log |
