@@ -22,4 +22,9 @@ class ProductService(
     fun getProducts(brandId: Long?, sortType: ProductSortType, pageable: Pageable): Page<ProductModel> {
         return productRepository.findAll(brandId, sortType, pageable)
     }
+
+    fun getProductsByIds(ids: List<Long>): Map<Long, ProductModel> {
+        if (ids.isEmpty()) return emptyMap()
+        return productRepository.findAllByIds(ids).associateBy { it.id }
+    }
 }

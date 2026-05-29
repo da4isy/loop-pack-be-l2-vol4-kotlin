@@ -6,6 +6,7 @@ import com.loopers.support.error.ErrorType
 enum class ProductSortType {
     LATEST,
     PRICE_ASC,
+    LIKES_DESC,
     ;
 
     companion object {
@@ -13,6 +14,7 @@ enum class ProductSortType {
             return when (value.lowercase()) {
                 "latest" -> LATEST
                 "price_asc" -> PRICE_ASC
+                "likes_desc" -> LIKES_DESC
                 else -> throw CoreException(
                     errorType = ErrorType.BAD_REQUEST,
                     customMessage = "지원하지 않는 정렬 조건입니다: $value",
