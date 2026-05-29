@@ -2,41 +2,30 @@ package com.loopers.application.like
 
 import com.loopers.domain.like.LikeService
 import com.loopers.domain.product.ProductService
-import com.loopers.domain.user.UserService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 
 @Component
 class LikeFacade(
     private val likeService: LikeService,
     private val productService: ProductService,
-    private val userService: UserService,
 ) {
 
-    @Transactional
-    fun like(loginId: String, password: String, productId: Long) {
-        val user = userService.getMe(loginId, password)
+    fun like(userId: Long, productId: Long) {
         productService.getProduct(productId)
-        likeService.like(user.id, productId)
+        likeService.like(userId, productId)
     }
 
-    @Transactional
-    fun unlike(loginId: String, password: String, productId: Long) {
-        val user = userService.getMe(loginId, password)
-        likeService.unlike(user.id, productId)
+    fun unlike(userId: Long, productId: Long) {
+        likeService.unlike(userId, productId)
     }
 
-    @Transactional(readOnly = true)
-    fun getMyLikes(loginId: String, password: String, pageable: Pageable): Page<LikeInfo> {
-        val user = userService.getMe(loginId, password)
-        val likes = likeService.getLikesByUserId(user.id, pageable)
+    fun getMyLikes(userId: Long, pageable: Pageable): Page<LikeInfo> {
+        val likes = likeService.getLikesByUserId(userId, pageable)
         val productIds = likes.content.map { it.productId }.distinct()
         val products = productService.getProductsByIds(productIds)
 
-        return likes.map { like ->
-            LikeInfo.of(like, products[like.productId])
-        }
+        return likes.map { like -> LikeInfo.of(like, products[like.productId]) }
     }
 }

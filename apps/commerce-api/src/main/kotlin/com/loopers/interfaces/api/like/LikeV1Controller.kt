@@ -1,6 +1,7 @@
 package com.loopers.interfaces.api.like
 
 import com.loopers.application.like.LikeFacade
+import com.loopers.domain.user.UserService
 import com.loopers.interfaces.api.ApiResponse
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class LikeV1Controller(
+    private val userService: UserService,
     private val likeFacade: LikeFacade,
 ) : LikeV1ApiSpec {
 
@@ -22,7 +24,8 @@ class LikeV1Controller(
         @RequestHeader("X-Loopers-LoginPw") password: String,
         @PathVariable productId: Long,
     ): ApiResponse<Any> {
-        likeFacade.like(loginId, password, productId)
+        val user = userService.getMe(loginId, password)
+        likeFacade.like(user.id, productId)
         return ApiResponse.success()
     }
 
@@ -32,7 +35,8 @@ class LikeV1Controller(
         @RequestHeader("X-Loopers-LoginPw") password: String,
         @PathVariable productId: Long,
     ): ApiResponse<Any> {
-        likeFacade.unlike(loginId, password, productId)
+        val user = userService.getMe(loginId, password)
+        likeFacade.unlike(user.id, productId)
         return ApiResponse.success()
     }
 
@@ -43,8 +47,9 @@ class LikeV1Controller(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): ApiResponse<*> {
+        val user = userService.getMe(loginId, password)
         val pageable = PageRequest.of(page, size)
-        return likeFacade.getMyLikes(loginId, password, pageable)
+        return likeFacade.getMyLikes(user.id, pageable)
             .map { LikeV1Dto.LikeResponse.from(it) }
             .let { ApiResponse.success(it) }
     }

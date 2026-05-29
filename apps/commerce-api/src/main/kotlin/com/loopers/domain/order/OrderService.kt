@@ -24,6 +24,17 @@ class OrderService(
             )
     }
 
+    fun getOrderByIdAndUserId(id: Long, userId: Long): OrderModel {
+        val order = getOrder(id)
+        if (order.userId != userId) {
+            throw CoreException(
+                errorType = ErrorType.NOT_FOUND,
+                customMessage = "존재하지 않는 주문입니다.",
+            )
+        }
+        return order
+    }
+
     fun getOrdersByUserId(
         userId: Long,
         startAt: ZonedDateTime?,

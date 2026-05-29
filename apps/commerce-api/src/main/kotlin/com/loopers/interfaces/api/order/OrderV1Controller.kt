@@ -1,6 +1,9 @@
 package com.loopers.interfaces.api.order
 
 import com.loopers.application.order.OrderFacade
+import com.loopers.application.order.OrderInfo
+import com.loopers.domain.order.OrderService
+import com.loopers.domain.user.UserService
 import com.loopers.interfaces.api.ApiResponse
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,6 +21,8 @@ import java.time.ZoneId
 @RequestMapping("/api/v1/orders")
 class OrderV1Controller(
     private val orderFacade: OrderFacade,
+    private val orderService: OrderService,
+    private val userService: UserService,
 ) : OrderV1ApiSpec {
 
     @PostMapping
@@ -26,7 +31,8 @@ class OrderV1Controller(
         @RequestHeader("X-Loopers-LoginPw") password: String,
         @RequestBody request: OrderV1Dto.CreateOrderRequest,
     ): ApiResponse<OrderV1Dto.OrderDetailResponse> {
-        return orderFacade.createOrder(loginId, password, request.toCommands())
+        val user = userService.getMe(loginId, password)
+        return orderFacade.createOrder(user.id, request.toCommands())
             .let { OrderV1Dto.OrderDetailResponse.from(it) }
             .let { ApiResponse.success(it) }
     }
@@ -40,12 +46,14 @@ class OrderV1Controller(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): ApiResponse<*> {
+        val user = userService.getMe(loginId, password)
         val zoneId = ZoneId.of("Asia/Seoul")
         val startZdt = startAt?.let { LocalDate.parse(it).atStartOfDay(zoneId) }
         val endZdt = endAt?.let { LocalDate.parse(it).plusDays(1).atStartOfDay(zoneId).minusNanos(1) }
         val pageable = PageRequest.of(page, size)
 
-        return orderFacade.getMyOrders(loginId, password, startZdt, endZdt, pageable)
+        return orderService.getOrdersByUserId(user.id, startZdt, endZdt, pageable)
+            .map { OrderInfo.from(it) }
             .map { OrderV1Dto.OrderResponse.from(it) }
             .let { ApiResponse.success(it) }
     }
@@ -56,7 +64,9 @@ class OrderV1Controller(
         @RequestHeader("X-Loopers-LoginPw") password: String,
         @PathVariable orderId: Long,
     ): ApiResponse<OrderV1Dto.OrderDetailResponse> {
-        return orderFacade.getOrderDetail(loginId, password, orderId)
+        val user = userService.getMe(loginId, password)
+        val order = orderService.getOrderByIdAndUserId(orderId, user.id)
+        return com.loopers.application.order.OrderDetailInfo.from(order)
             .let { OrderV1Dto.OrderDetailResponse.from(it) }
             .let { ApiResponse.success(it) }
     }
