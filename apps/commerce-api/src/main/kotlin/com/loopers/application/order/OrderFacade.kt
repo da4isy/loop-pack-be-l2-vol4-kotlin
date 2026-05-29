@@ -1,8 +1,7 @@
 package com.loopers.application.order
 
 import com.loopers.domain.brand.BrandService
-import com.loopers.domain.order.OrderItemModel
-import com.loopers.domain.order.OrderModel
+import com.loopers.domain.order.OrderCreationService
 import com.loopers.domain.order.OrderService
 import com.loopers.domain.order.PaymentClient
 import com.loopers.domain.product.ProductService
@@ -16,36 +15,28 @@ class OrderFacade(
     private val orderService: OrderService,
     private val productService: ProductService,
     private val brandService: BrandService,
+    private val orderCreationService: OrderCreationService,
     private val paymentClient: PaymentClient,
 ) {
 
+    /**
+     * 상품 조회 → 주문 생성 + 재고 차감 → 결제 → 저장
+     */
     @Transactional
     fun createOrder(userId: Long, items: List<OrderItemCommand>): OrderDetailInfo {
-        val products = items.map { item ->
-            productService.getProduct(item.productId)
-        }
-        val brandIds = products.map { it.brandId }.distinct()
-        val brands = brandService.getBrandsByIds(brandIds)
+        // 1. 상품 · 브랜드 조회
+        val products = items.map { productService.getProduct(it.productId) }
+        val brands = brandService.getBrandsByIds(products.map { it.brandId }.distinct())
 
-        val orderItems = items.mapIndexed { index, item ->
-            val product = products[index]
-            val brand = brands[product.brandId]
-                ?: throw CoreException(
-                    errorType = ErrorType.NOT_FOUND,
-                    customMessage = "브랜드 정보를 찾을 수 없습니다.",
-                )
-            product.decreaseStock(item.quantity)
-            OrderItemModel(
-                productId = product.id,
-                productName = product.name,
-                productPrice = product.price,
-                brandName = brand.name,
-                quantity = item.quantity,
-            )
-        }
+        // 2. 주문 생성 + 재고 차감 (도메인 서비스)
+        val order = orderCreationService.buildOrder(
+            userId = userId,
+            products = products,
+            brands = brands,
+            quantities = items.map { it.quantity },
+        )
 
-        val order = OrderModel.create(userId = userId, items = orderItems)
-
+        // 3. 결제
         val paymentResult = paymentClient.pay(order.totalPrice)
         if (!paymentResult.success) {
             throw CoreException(
@@ -54,6 +45,7 @@ class OrderFacade(
             )
         }
 
+        // 4. 저장
         val savedOrder = orderService.createOrder(order)
         return OrderDetailInfo.from(savedOrder)
     }

@@ -5,8 +5,6 @@ import com.loopers.application.order.OrderInfo
 import com.loopers.domain.order.OrderService
 import com.loopers.domain.user.UserService
 import com.loopers.interfaces.api.ApiResponse
-import com.loopers.support.error.CoreException
-import com.loopers.support.error.ErrorType
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -67,13 +65,7 @@ class OrderV1Controller(
         @PathVariable orderId: Long,
     ): ApiResponse<OrderV1Dto.OrderDetailResponse> {
         val user = userService.getMe(loginId, password)
-        val order = orderService.getOrder(orderId)
-        if (order.userId != user.id) {
-            throw CoreException(
-                errorType = ErrorType.NOT_FOUND,
-                customMessage = "존재하지 않는 주문입니다.",
-            )
-        }
+        val order = orderService.getOrderByIdAndUserId(orderId, user.id)
         return com.loopers.application.order.OrderDetailInfo.from(order)
             .let { OrderV1Dto.OrderDetailResponse.from(it) }
             .let { ApiResponse.success(it) }

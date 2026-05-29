@@ -1,8 +1,7 @@
 package com.loopers.application.product
 
-import com.loopers.domain.brand.BrandService
 import com.loopers.domain.like.LikeService
-import com.loopers.domain.product.ProductService
+import com.loopers.domain.product.ProductDetailService
 import com.loopers.domain.product.ProductSortType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -10,31 +9,23 @@ import org.springframework.stereotype.Component
 
 @Component
 class ProductFacade(
-    private val productService: ProductService,
-    private val brandService: BrandService,
+    private val productDetailService: ProductDetailService,
     private val likeService: LikeService,
 ) {
+
     fun getProductDetail(productId: Long): ProductDetailInfo {
-        val product = productService.getProduct(productId)
-        val brand = brandService.getBrand(product.brandId)
+        val (product, brand) = productDetailService.getProductWithBrand(productId)
         val likeCount = likeService.countByProductId(productId)
         return ProductDetailInfo.of(product, brand, likeCount)
     }
 
     fun getProducts(brandId: Long?, sortType: ProductSortType, pageable: Pageable): Page<ProductDetailInfo> {
-        val products = productService.getProducts(brandId, sortType, pageable)
-        val brandIds = products.content.map { it.brandId }.distinct()
-        val brands = brandService.getBrandsByIds(brandIds)
-        val productIds = products.content.map { it.id }
+        val productsWithBrands = productDetailService.getProductsWithBrands(brandId, sortType, pageable)
+        val productIds = productsWithBrands.content.map { it.product.id }
         val likeCounts = likeService.countByProductIds(productIds)
 
-        return products.map { product ->
-            ProductDetailInfo.of(
-                product = product,
-                brand = brands[product.brandId]
-                    ?: throw IllegalStateException("브랜드 정보를 찾을 수 없습니다. brandId=${product.brandId}"),
-                likeCount = likeCounts[product.id] ?: 0,
-            )
+        return productsWithBrands.map { (product, brand) ->
+            ProductDetailInfo.of(product, brand, likeCounts[product.id] ?: 0)
         }
     }
 }
