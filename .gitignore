@@ -41,6 +41,7 @@ out/
 
 ### Personal docs ###
 docs/*.md
+docs/**/*.md
 plan/
 CLAUDE.md
 
