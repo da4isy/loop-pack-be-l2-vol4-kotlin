@@ -66,7 +66,24 @@ class CouponTemplateModel(
 
     fun isExpired(): Boolean = ZonedDateTime.now().isAfter(expiredAt)
 
+    fun isDeleted(): Boolean = deletedAt != null
+
     fun update(name: String, value: Long, minOrderAmount: Long?, expiredAt: ZonedDateTime) {
+        if (name.isBlank()) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "쿠폰 이름은 비어있을 수 없습니다.")
+        }
+        if (value <= 0) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "쿠폰 할인 값은 0보다 커야 합니다.")
+        }
+        if (type == CouponType.RATE && value > 100) {
+            throw CoreException(
+                errorType = ErrorType.BAD_REQUEST,
+                customMessage = "정률 쿠폰 할인율은 100%를 초과할 수 없습니다.",
+            )
+        }
+        if (minOrderAmount != null && minOrderAmount < 0) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "최소 주문 금액은 0 이상이어야 합니다.")
+        }
         this.name = name
         this.value = value
         this.minOrderAmount = minOrderAmount

@@ -40,6 +40,7 @@ class CouponV1Controller(
         val user = userService.getMe(loginId, password)
         val pageable = PageRequest.of(page, size)
         return couponFacade.getMyIssuedCoupons(user.id, pageable)
+            .map { CouponV1Dto.IssuedCouponResponse.from(it) }
             .let { ApiResponse.success(it) }
     }
 }

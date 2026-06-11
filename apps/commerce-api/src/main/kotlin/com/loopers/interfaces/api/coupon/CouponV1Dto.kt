@@ -1,8 +1,8 @@
 package com.loopers.interfaces.api.coupon
 
+import com.loopers.application.coupon.IssuedCouponInfo
 import com.loopers.domain.coupon.CouponStatus
 import com.loopers.domain.coupon.CouponType
-import com.loopers.domain.coupon.IssuedCouponModel
 import java.time.ZonedDateTime
 
 class CouponV1Dto {
@@ -18,20 +18,15 @@ class CouponV1Dto {
         val createdAt: ZonedDateTime,
     ) {
         companion object {
-            fun from(
-                model: IssuedCouponModel,
-                couponName: String?,
-                couponType: CouponType?,
-                couponValue: Long?,
-            ) = IssuedCouponResponse(
-                issuedCouponId = model.id,
-                couponTemplateId = model.couponTemplateId,
-                couponName = couponName,
-                couponType = couponType,
-                couponValue = couponValue,
-                status = model.status,
-                usedAt = model.usedAt,
-                createdAt = model.createdAt,
+            fun from(info: IssuedCouponInfo) = IssuedCouponResponse(
+                issuedCouponId = info.issuedCouponId,
+                couponTemplateId = info.couponTemplateId,
+                couponName = info.couponName,
+                couponType = info.couponType,
+                couponValue = info.couponValue,
+                status = info.status,
+                usedAt = info.usedAt,
+                createdAt = info.createdAt,
             )
         }
     }
