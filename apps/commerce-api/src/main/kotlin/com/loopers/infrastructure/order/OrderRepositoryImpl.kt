@@ -34,4 +34,7 @@ class OrderRepositoryImpl(
                 orderJpaRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable)
         }
     }
+
+    override fun findAll(pageable: Pageable): Page<OrderModel> =
+        orderJpaRepository.findAll(pageable)
 }

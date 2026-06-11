@@ -54,5 +54,20 @@ class ProductModel(
         stock -= quantity
     }
 
+    fun update(name: String, price: Long, stock: Long) {
+        if (name.isBlank()) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "상품 이름은 비어있을 수 없습니다.")
+        }
+        if (price < 0) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "상품 가격은 0 이상이어야 합니다.")
+        }
+        if (stock < 0) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "재고는 0 이상이어야 합니다.")
+        }
+        this.name = name
+        this.price = price
+        this.stock = stock
+    }
+
     fun isDeleted(): Boolean = deletedAt != null
 }

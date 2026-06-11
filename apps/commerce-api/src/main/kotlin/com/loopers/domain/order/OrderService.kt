@@ -48,4 +48,9 @@ class OrderService(
     ): Page<OrderModel> {
         return orderRepository.findAllByUserId(userId, startAt, endAt, pageable)
     }
+
+    @Transactional(readOnly = true)
+    fun getAll(pageable: Pageable): Page<OrderModel> {
+        return orderRepository.findAll(pageable)
+    }
 }
