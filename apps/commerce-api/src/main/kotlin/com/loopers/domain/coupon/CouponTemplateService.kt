@@ -41,6 +41,12 @@ class CouponTemplateService(
         return couponTemplateRepository.save(template)
     }
 
+    @Transactional(readOnly = true)
+    fun getByIds(ids: List<Long>): Map<Long, CouponTemplateModel> {
+        if (ids.isEmpty()) return emptyMap()
+        return ids.mapNotNull { couponTemplateRepository.findById(it) }.associateBy { it.id }
+    }
+
     @Transactional
     fun delete(id: Long) {
         val template = getById(id)

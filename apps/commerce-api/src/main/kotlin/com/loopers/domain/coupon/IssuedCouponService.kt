@@ -20,7 +20,7 @@ class IssuedCouponService(
         if (template.isExpired()) {
             throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "만료된 쿠폰입니다.")
         }
-        if (template.deletedAt != null) {
+        if (template.isDeleted()) {
             throw CoreException(errorType = ErrorType.NOT_FOUND, customMessage = "존재하지 않는 쿠폰입니다.")
         }
         if (issuedCouponRepository.existsByUserIdAndCouponTemplateId(userId, couponTemplateId)) {
