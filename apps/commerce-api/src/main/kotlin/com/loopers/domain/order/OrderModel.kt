@@ -14,6 +14,9 @@ import jakarta.persistence.Table
 class OrderModel(
     userId: Long,
     totalPrice: Long = 0,
+    originalPrice: Long = 0,
+    discountAmount: Long = 0,
+    couponId: Long? = null,
 ) : BaseEntity() {
 
     @Column(name = "user_id", nullable = false)
@@ -22,6 +25,18 @@ class OrderModel(
 
     @Column(name = "total_price", nullable = false)
     var totalPrice: Long = totalPrice
+        protected set
+
+    @Column(name = "original_price", nullable = false)
+    var originalPrice: Long = originalPrice
+        protected set
+
+    @Column(name = "discount_amount", nullable = false)
+    var discountAmount: Long = discountAmount
+        protected set
+
+    @Column(name = "coupon_id")
+    var couponId: Long? = couponId
         protected set
 
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true)
@@ -34,8 +49,19 @@ class OrderModel(
 
     fun calculateTotalPrice(): Long = orderItems.sumOf { it.itemTotalPrice() }
 
+    fun applyCoupon(couponId: Long, discountAmount: Long) {
+        this.couponId = couponId
+        this.discountAmount = discountAmount
+        this.totalPrice = maxOf(originalPrice - discountAmount, 0)
+    }
+
     companion object {
-        fun create(userId: Long, items: List<OrderItemModel>): OrderModel {
+        fun create(
+            userId: Long,
+            items: List<OrderItemModel>,
+            discountAmount: Long = 0,
+            couponId: Long? = null,
+        ): OrderModel {
             if (items.isEmpty()) {
                 throw CoreException(
                     errorType = ErrorType.BAD_REQUEST,
@@ -44,7 +70,11 @@ class OrderModel(
             }
             val order = OrderModel(userId = userId)
             items.forEach { order.addItem(it) }
-            order.totalPrice = order.calculateTotalPrice()
+            val originalPrice = order.calculateTotalPrice()
+            order.originalPrice = originalPrice
+            order.discountAmount = discountAmount
+            order.totalPrice = maxOf(originalPrice - discountAmount, 0)
+            order.couponId = couponId
             return order
         }
     }

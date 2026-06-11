@@ -32,7 +32,7 @@ class OrderV1Controller(
         @RequestBody request: OrderV1Dto.CreateOrderRequest,
     ): ApiResponse<OrderV1Dto.OrderDetailResponse> {
         val user = userService.getMe(loginId, password)
-        return orderFacade.createOrder(user.id, request.toCommands())
+        return orderFacade.createOrder(user.id, request.toCommands(), request.couponId)
             .let { OrderV1Dto.OrderDetailResponse.from(it) }
             .let { ApiResponse.success(it) }
     }
