@@ -18,6 +18,8 @@ class ProductRepositoryImpl(
 
     override fun findById(id: Long): ProductModel? = productJpaRepository.findByIdOrNull(id)
 
+    override fun findByIdWithLock(id: Long): ProductModel? = productJpaRepository.findByIdWithLock(id)
+
     override fun findAllByIds(ids: List<Long>): List<ProductModel> = productJpaRepository.findAllById(ids)
 
     override fun findAll(brandId: Long?, sortType: ProductSortType, pageable: Pageable): Page<ProductModel> {
