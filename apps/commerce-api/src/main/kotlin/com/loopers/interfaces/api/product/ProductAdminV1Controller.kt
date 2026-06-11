@@ -1,6 +1,6 @@
 package com.loopers.interfaces.api.product
 
-import com.loopers.domain.brand.BrandService
+import com.loopers.application.product.ProductAdminFacade
 import com.loopers.domain.product.ProductService
 import com.loopers.domain.product.ProductSortType
 import com.loopers.interfaces.api.ApiResponse
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api-admin/v1/products")
 class ProductAdminV1Controller(
     private val productService: ProductService,
-    private val brandService: BrandService,
+    private val productAdminFacade: ProductAdminFacade,
 ) {
 
     @GetMapping
@@ -44,9 +44,12 @@ class ProductAdminV1Controller(
     fun createProduct(
         @RequestBody request: ProductAdminV1Dto.CreateProductRequest,
     ): ApiResponse<ProductAdminV1Dto.ProductResponse> {
-        // 삭제된 브랜드에 상품 등록 시 404
-        brandService.getBrand(request.brandId)
-        return productService.create(request.name, request.price, request.stock, request.brandId)
+        return productAdminFacade.createProduct(
+            request.name,
+            request.price,
+            request.stock,
+            request.brandId,
+        )
             .let { ProductAdminV1Dto.ProductResponse.from(it) }
             .let { ApiResponse.success(it) }
     }

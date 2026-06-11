@@ -1,10 +1,9 @@
 package com.loopers.interfaces.api.brand
 
+import com.loopers.application.brand.BrandAdminFacade
 import com.loopers.domain.brand.BrandService
-import com.loopers.domain.product.ProductService
 import com.loopers.interfaces.api.ApiResponse
 import org.springframework.data.domain.PageRequest
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api-admin/v1/brands")
 class BrandAdminV1Controller(
     private val brandService: BrandService,
-    private val productService: ProductService,
+    private val brandAdminFacade: BrandAdminFacade,
 ) {
 
     @GetMapping
@@ -59,10 +58,8 @@ class BrandAdminV1Controller(
     }
 
     @DeleteMapping("/{brandId}")
-    @Transactional
     fun deleteBrand(@PathVariable brandId: Long): ApiResponse<Unit> {
-        productService.deleteByBrandId(brandId)
-        brandService.delete(brandId)
+        brandAdminFacade.deleteBrandWithProducts(brandId)
         return ApiResponse.success(Unit)
     }
 }
