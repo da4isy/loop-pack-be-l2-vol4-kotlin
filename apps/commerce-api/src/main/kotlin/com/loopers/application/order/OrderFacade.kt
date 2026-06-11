@@ -43,7 +43,7 @@ class OrderFacade(
         // 3. 쿠폰 검증 + 할인 적용
         var discountAmount = 0L
         if (couponId != null) {
-            val issuedCoupon = issuedCouponService.getByIdWithLock(couponId)
+            val issuedCoupon = issuedCouponService.getById(couponId)
             issuedCoupon.validateOwner(userId)
 
             val template = couponTemplateService.getById(issuedCoupon.couponTemplateId)
