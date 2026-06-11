@@ -6,7 +6,10 @@ import java.time.ZonedDateTime
 
 data class OrderDetailInfo(
     val orderId: Long,
+    val originalPrice: Long,
+    val discountAmount: Long,
     val totalPrice: Long,
+    val couponId: Long?,
     val createdAt: ZonedDateTime,
     val items: List<OrderItemInfo>,
 ) {
@@ -35,7 +38,10 @@ data class OrderDetailInfo(
         fun from(order: OrderModel): OrderDetailInfo {
             return OrderDetailInfo(
                 orderId = order.id,
+                originalPrice = order.originalPrice,
+                discountAmount = order.discountAmount,
                 totalPrice = order.totalPrice,
+                couponId = order.couponId,
                 createdAt = order.createdAt,
                 items = order.orderItems.map { OrderItemInfo.from(it) },
             )
