@@ -23,5 +23,12 @@ class BrandModel(
         }
     }
 
+    fun update(name: String) {
+        if (name.isBlank()) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "브랜드 이름은 비어있을 수 없습니다.")
+        }
+        this.name = name
+    }
+
     fun isDeleted(): Boolean = deletedAt != null
 }

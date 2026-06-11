@@ -44,4 +44,38 @@ class ProductService(
         if (ids.isEmpty()) return emptyMap()
         return productRepository.findAllByIds(ids).associateBy { it.id }
     }
+
+    @Transactional
+    fun create(name: String, price: Long, stock: Long, brandId: Long): ProductModel {
+        return productRepository.save(
+            ProductModel(name = name, price = price, stock = stock, brandId = brandId),
+        )
+    }
+
+    @Transactional
+    fun update(id: Long, name: String, price: Long, stock: Long): ProductModel {
+        val product = getProduct(id)
+        product.update(name, price, stock)
+        return productRepository.save(product)
+    }
+
+    @Transactional
+    fun delete(id: Long) {
+        val product = getProduct(id)
+        product.delete()
+        productRepository.save(product)
+    }
+
+    @Transactional
+    fun deleteByBrandId(brandId: Long) {
+        val products = productRepository.findAll(
+            brandId,
+            ProductSortType.LATEST,
+            org.springframework.data.domain.Pageable.unpaged(),
+        )
+        products.content.forEach { product ->
+            product.delete()
+            productRepository.save(product)
+        }
+    }
 }
