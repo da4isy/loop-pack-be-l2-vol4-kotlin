@@ -28,8 +28,8 @@ class OrderFacade(
      */
     @Transactional
     fun createOrder(userId: Long, items: List<OrderItemCommand>, couponId: Long?): OrderDetailInfo {
-        // 1. 상품 · 브랜드 조회
-        val products = items.map { productService.getProduct(it.productId) }
+        // 1. 상품 조회 (비관적 락 — 재고 차감 동시성 방지) · 브랜드 조회
+        val products = items.map { productService.getProductWithLock(it.productId) }
         val brands = brandService.getBrandsByIds(products.map { it.brandId }.distinct())
 
         // 2. 주문 생성 + 재고 차감 (도메인 서비스)
@@ -43,7 +43,7 @@ class OrderFacade(
         // 3. 쿠폰 검증 + 할인 적용
         var discountAmount = 0L
         if (couponId != null) {
-            val issuedCoupon = issuedCouponService.getByIdWithLock(couponId)
+            val issuedCoupon = issuedCouponService.getById(couponId)
             issuedCoupon.validateOwner(userId)
 
             val template = couponTemplateService.getById(issuedCoupon.couponTemplateId)
