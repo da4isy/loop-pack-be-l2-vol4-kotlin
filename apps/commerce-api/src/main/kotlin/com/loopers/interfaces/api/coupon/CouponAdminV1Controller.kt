@@ -33,6 +33,7 @@ class CouponAdminV1Controller(
                 value = request.value,
                 minOrderAmount = request.minOrderAmount,
                 expiredAt = request.expiredAt,
+                totalQuantity = request.totalQuantity,
             ),
         )
         return ApiResponse.success(CouponAdminV1Dto.CouponTemplateResponse.from(template))

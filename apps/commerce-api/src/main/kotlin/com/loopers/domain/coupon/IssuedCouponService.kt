@@ -15,7 +15,8 @@ class IssuedCouponService(
 
     @Transactional
     fun issue(userId: Long, couponTemplateId: Long): IssuedCouponModel {
-        val template = couponTemplateService.getById(couponTemplateId)
+        // 비관적 락으로 템플릿 조회 — 선착순 수량 차감 동시성 방지
+        val template = couponTemplateService.getByIdWithLock(couponTemplateId)
 
         if (template.isExpired()) {
             throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "만료된 쿠폰입니다.")
@@ -26,6 +27,9 @@ class IssuedCouponService(
         if (issuedCouponRepository.existsByUserIdAndCouponTemplateId(userId, couponTemplateId)) {
             throw CoreException(errorType = ErrorType.CONFLICT, customMessage = "이미 발급받은 쿠폰입니다.")
         }
+
+        // 선착순 수량 차감 (totalQuantity가 null이면 무제한)
+        template.issueOne()
 
         val issuedCoupon = IssuedCouponModel(couponTemplateId = couponTemplateId, userId = userId)
         return issuedCouponRepository.save(issuedCoupon)
