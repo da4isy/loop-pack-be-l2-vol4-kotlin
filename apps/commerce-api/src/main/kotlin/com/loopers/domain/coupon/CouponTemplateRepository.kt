@@ -6,5 +6,6 @@ import org.springframework.data.domain.Pageable
 interface CouponTemplateRepository {
     fun save(couponTemplate: CouponTemplateModel): CouponTemplateModel
     fun findById(id: Long): CouponTemplateModel?
+    fun findByIdWithLock(id: Long): CouponTemplateModel?
     fun findAll(pageable: Pageable): Page<CouponTemplateModel>
 }

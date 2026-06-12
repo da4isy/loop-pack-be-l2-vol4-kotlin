@@ -19,6 +19,7 @@ class CouponTemplateModel(
     value: Long,
     minOrderAmount: Long?,
     expiredAt: ZonedDateTime,
+    totalQuantity: Long? = null,
 ) : BaseEntity() {
 
     @Column(name = "name", nullable = false)
@@ -40,6 +41,14 @@ class CouponTemplateModel(
 
     @Column(name = "expired_at", nullable = false)
     var expiredAt: ZonedDateTime = expiredAt
+        protected set
+
+    @Column(name = "total_quantity")
+    var totalQuantity: Long? = totalQuantity
+        protected set
+
+    @Column(name = "issued_count", nullable = false)
+    var issuedCount: Long = 0
         protected set
 
     init {
@@ -67,6 +76,23 @@ class CouponTemplateModel(
     fun isExpired(): Boolean = ZonedDateTime.now().isAfter(expiredAt)
 
     fun isDeleted(): Boolean = deletedAt != null
+
+    /**
+     * 선착순 쿠폰 발급 — 수량 1 차감
+     * totalQuantity가 null이면 무제한 발급
+     */
+    fun issueOne() {
+        if (totalQuantity != null && issuedCount >= totalQuantity!!) {
+            throw CoreException(
+                errorType = ErrorType.BAD_REQUEST,
+                customMessage = "쿠폰 발급 수량이 모두 소진되었습니다.",
+            )
+        }
+        issuedCount++
+    }
+
+    fun hasRemainingQuantity(): Boolean =
+        totalQuantity == null || issuedCount < totalQuantity!!
 
     fun update(name: String, value: Long, minOrderAmount: Long?, expiredAt: ZonedDateTime) {
         if (name.isBlank()) {

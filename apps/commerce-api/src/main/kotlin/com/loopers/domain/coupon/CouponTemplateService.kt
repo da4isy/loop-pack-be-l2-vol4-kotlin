@@ -41,6 +41,15 @@ class CouponTemplateService(
         return couponTemplateRepository.save(template)
     }
 
+    /**
+     * 비관적 락으로 템플릿 조회 — 선착순 쿠폰 발급 시 수량 차감용
+     */
+    @Transactional
+    fun getByIdWithLock(id: Long): CouponTemplateModel {
+        return couponTemplateRepository.findByIdWithLock(id)
+            ?: throw CoreException(errorType = ErrorType.NOT_FOUND, customMessage = "존재하지 않는 쿠폰입니다.")
+    }
+
     @Transactional(readOnly = true)
     fun getByIds(ids: List<Long>): Map<Long, CouponTemplateModel> {
         if (ids.isEmpty()) return emptyMap()
