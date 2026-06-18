@@ -1,6 +1,8 @@
 package com.loopers.application.order
 
 import com.loopers.domain.brand.BrandService
+import com.loopers.domain.coupon.CouponTemplateService
+import com.loopers.domain.coupon.IssuedCouponService
 import com.loopers.domain.order.OrderCreationService
 import com.loopers.domain.order.OrderService
 import com.loopers.domain.order.PaymentClient
@@ -17,15 +19,17 @@ class OrderFacade(
     private val brandService: BrandService,
     private val orderCreationService: OrderCreationService,
     private val paymentClient: PaymentClient,
+    private val issuedCouponService: IssuedCouponService,
+    private val couponTemplateService: CouponTemplateService,
 ) {
 
     /**
-     * 상품 조회 → 주문 생성 + 재고 차감 → 결제 → 저장
+     * 상품 조회 → 쿠폰 검증 → 주문 생성 + 재고 차감 → 결제 → 저장
      */
     @Transactional
-    fun createOrder(userId: Long, items: List<OrderItemCommand>): OrderDetailInfo {
-        // 1. 상품 · 브랜드 조회
-        val products = items.map { productService.getProduct(it.productId) }
+    fun createOrder(userId: Long, items: List<OrderItemCommand>, couponId: Long?): OrderDetailInfo {
+        // 1. 상품 조회 (비관적 락 — 재고 차감 동시성 방지) · 브랜드 조회
+        val products = items.map { productService.getProductWithLock(it.productId) }
         val brands = brandService.getBrandsByIds(products.map { it.brandId }.distinct())
 
         // 2. 주문 생성 + 재고 차감 (도메인 서비스)
@@ -36,7 +40,34 @@ class OrderFacade(
             quantities = items.map { it.quantity },
         )
 
-        // 3. 결제
+        // 3. 쿠폰 검증 + 할인 적용
+        var discountAmount = 0L
+        if (couponId != null) {
+            val issuedCoupon = issuedCouponService.getById(couponId)
+            issuedCoupon.validateOwner(userId)
+
+            val template = couponTemplateService.getById(issuedCoupon.couponTemplateId)
+            if (template.isExpired()) {
+                throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "만료된 쿠폰입니다.")
+            }
+
+            val originalPrice = order.calculateTotalPrice()
+
+            // 최소 주문 금액 체크
+            if (template.minOrderAmount != null && originalPrice < template.minOrderAmount!!) {
+                throw CoreException(
+                    errorType = ErrorType.BAD_REQUEST,
+                    customMessage = "최소 주문 금액(${template.minOrderAmount}원)을 충족하지 않습니다.",
+                )
+            }
+
+            discountAmount = template.calculateDiscount(originalPrice)
+            issuedCoupon.use()
+
+            order.applyCoupon(couponId = issuedCoupon.id, discountAmount = discountAmount)
+        }
+
+        // 4. 결제
         val paymentResult = paymentClient.pay(order.totalPrice)
         if (!paymentResult.success) {
             throw CoreException(
@@ -45,7 +76,7 @@ class OrderFacade(
             )
         }
 
-        // 4. 저장
+        // 5. 저장
         val savedOrder = orderService.createOrder(order)
         return OrderDetailInfo.from(savedOrder)
     }

@@ -13,4 +13,5 @@ interface OrderRepository {
         endAt: ZonedDateTime?,
         pageable: Pageable,
     ): Page<OrderModel>
+    fun findAll(pageable: Pageable): Page<OrderModel>
 }

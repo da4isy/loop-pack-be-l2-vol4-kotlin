@@ -9,6 +9,7 @@ class OrderV1Dto {
 
     data class CreateOrderRequest(
         val items: List<OrderItemRequest>,
+        val couponId: Long? = null,
     ) {
         data class OrderItemRequest(
             val productId: Long,
@@ -38,7 +39,10 @@ class OrderV1Dto {
 
     data class OrderDetailResponse(
         val orderId: Long,
+        val originalPrice: Long,
+        val discountAmount: Long,
         val totalPrice: Long,
+        val couponId: Long?,
         val createdAt: ZonedDateTime,
         val items: List<OrderItemResponse>,
     ) {
@@ -53,7 +57,10 @@ class OrderV1Dto {
         companion object {
             fun from(info: OrderDetailInfo) = OrderDetailResponse(
                 orderId = info.orderId,
+                originalPrice = info.originalPrice,
+                discountAmount = info.discountAmount,
                 totalPrice = info.totalPrice,
+                couponId = info.couponId,
                 createdAt = info.createdAt,
                 items = info.items.map {
                     OrderItemResponse(
