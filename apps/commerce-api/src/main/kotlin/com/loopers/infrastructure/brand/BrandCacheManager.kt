@@ -42,7 +42,8 @@ class BrandCacheManager(
         }
     }
 
-    fun putDetail(brandId: Long, info: BrandCacheInfo) {
+    fun putDetail(brandId: Long, brand: com.loopers.domain.brand.BrandModel) {
+        val info = BrandCacheInfo.from(brand)
         localCache.put(brandId, info)
 
         try {

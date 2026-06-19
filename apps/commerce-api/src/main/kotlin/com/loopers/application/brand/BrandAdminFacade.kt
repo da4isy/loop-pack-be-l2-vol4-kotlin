@@ -1,7 +1,9 @@
 package com.loopers.application.brand
 
+import com.loopers.domain.brand.BrandModel
 import com.loopers.domain.brand.BrandService
 import com.loopers.domain.product.ProductService
+import com.loopers.infrastructure.brand.BrandCacheManager
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -9,14 +11,20 @@ import org.springframework.transaction.annotation.Transactional
 class BrandAdminFacade(
     private val brandService: BrandService,
     private val productService: ProductService,
+    private val brandCacheManager: BrandCacheManager,
 ) {
 
-    /**
-     * 브랜드 삭제 — 소속 상품 연쇄 soft delete 후 브랜드 삭제
-     */
+    @Transactional
+    fun updateBrand(id: Long, name: String): BrandModel {
+        val brand = brandService.update(id, name)
+        brandCacheManager.evictDetail(id)
+        return brand
+    }
+
     @Transactional
     fun deleteBrandWithProducts(brandId: Long) {
         productService.deleteByBrandId(brandId)
         brandService.delete(brandId)
+        brandCacheManager.evictDetail(brandId)
     }
 }

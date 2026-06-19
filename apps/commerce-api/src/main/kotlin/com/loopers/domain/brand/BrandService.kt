@@ -1,9 +1,7 @@
 package com.loopers.domain.brand
 
-import com.loopers.support.cache.BrandCacheEvictEvent
 import com.loopers.support.error.CoreException
 import com.loopers.support.error.ErrorType
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -12,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 class BrandService(
     private val brandRepository: BrandRepository,
-    private val eventPublisher: ApplicationEventPublisher,
 ) {
     @Transactional(readOnly = true)
     fun getBrand(id: Long): BrandModel {
@@ -43,9 +40,7 @@ class BrandService(
     fun update(id: Long, name: String): BrandModel {
         val brand = getBrand(id)
         brand.update(name)
-        val saved = brandRepository.save(brand)
-        eventPublisher.publishEvent(BrandCacheEvictEvent(id))
-        return saved
+        return brandRepository.save(brand)
     }
 
     @Transactional
@@ -53,7 +48,6 @@ class BrandService(
         val brand = getBrandIncludingDeleted(id)
         brand.delete()
         brandRepository.save(brand)
-        eventPublisher.publishEvent(BrandCacheEvictEvent(id))
     }
 
     @Transactional(readOnly = true)
