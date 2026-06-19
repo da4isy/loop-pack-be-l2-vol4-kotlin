@@ -1,7 +1,9 @@
 package com.loopers.domain.product
 
+import com.loopers.support.cache.ProductCacheEvictEvent
 import com.loopers.support.error.CoreException
 import com.loopers.support.error.ErrorType
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -10,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 class ProductService(
     private val productRepository: ProductRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     @Transactional(readOnly = true)
     fun getProduct(id: Long): ProductModel {
@@ -56,7 +59,9 @@ class ProductService(
     fun update(id: Long, name: String, price: Long, stock: Long): ProductModel {
         val product = getProduct(id)
         product.update(name, price, stock)
-        return productRepository.save(product)
+        val saved = productRepository.save(product)
+        eventPublisher.publishEvent(ProductCacheEvictEvent(id))
+        return saved
     }
 
     @Transactional
@@ -64,6 +69,7 @@ class ProductService(
         val product = getProduct(id)
         product.delete()
         productRepository.save(product)
+        eventPublisher.publishEvent(ProductCacheEvictEvent(id))
     }
 
     @Transactional
