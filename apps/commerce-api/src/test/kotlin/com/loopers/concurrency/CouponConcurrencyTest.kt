@@ -62,12 +62,12 @@ class CouponConcurrencyTest @Autowired constructor(
 
         // 쿠폰 템플릿 + 발급 쿠폰 1장
         jdbcTemplate.execute(
-            "INSERT INTO coupon_templates (id, name, type, value, min_order_amount, expired_at, created_at, updated_at)" +
-                " VALUES (1, '10% 할인', 'RATE', 10, NULL, '2027-12-31 23:59:59', NOW(), NOW())",
+            "INSERT INTO coupon_templates (id, name, type, value, min_order_amount, expired_at, issued_count, created_at, updated_at)" +
+                " VALUES (1, '10% 할인', 'RATE', 10, NULL, '2027-12-31 23:59:59', 0, NOW(), NOW())",
         )
         jdbcTemplate.execute(
-            "INSERT INTO issued_coupons (id, coupon_template_id, user_id, status, created_at, updated_at)" +
-                " VALUES (1, 1, 1, 'AVAILABLE', NOW(), NOW())",
+            "INSERT INTO issued_coupons (id, coupon_template_id, user_id, status, version, created_at, updated_at)" +
+                " VALUES (1, 1, 1, 'AVAILABLE', 0, NOW(), NOW())",
         )
     }
 
