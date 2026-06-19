@@ -1,7 +1,6 @@
 package com.loopers.infrastructure.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.loopers.application.product.ProductDetailInfo
 import com.loopers.config.redis.RedisConfig
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.RedisTemplate
@@ -22,17 +21,17 @@ class ProductCacheManager(
         private const val DETAIL_JITTER_SECONDS = 30L
     }
 
-    fun getDetail(productId: Long): ProductDetailInfo? {
+    fun getDetail(productId: Long): ProductCacheInfo? {
         return try {
             val key = "$DETAIL_KEY_PREFIX$productId"
             val cached = redisTemplate.opsForValue().get(key) ?: return null
-            objectMapper.readValue(cached, ProductDetailInfo::class.java)
+            objectMapper.readValue(cached, ProductCacheInfo::class.java)
         } catch (e: Exception) {
             null
         }
     }
 
-    fun putDetail(productId: Long, info: ProductDetailInfo) {
+    fun putDetail(productId: Long, info: ProductCacheInfo) {
         try {
             val key = "$DETAIL_KEY_PREFIX$productId"
             val json = objectMapper.writeValueAsString(info)
