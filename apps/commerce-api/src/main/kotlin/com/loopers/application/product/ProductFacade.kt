@@ -4,7 +4,6 @@ import com.loopers.domain.brand.BrandService
 import com.loopers.domain.product.ProductDetailService
 import com.loopers.domain.product.ProductService
 import com.loopers.domain.product.ProductSortType
-import com.loopers.infrastructure.brand.BrandCacheInfo
 import com.loopers.infrastructure.brand.BrandCacheManager
 import com.loopers.infrastructure.product.ProductCacheManager
 import org.springframework.data.domain.Page
@@ -24,20 +23,7 @@ class ProductFacade(
         productCacheManager.getDetail(productId)?.let { return it }
 
         val product = productService.getProduct(productId)
-
-        val cachedBrand = brandCacheManager.getDetail(product.brandId)
-        val brandId: Long
-        val brandName: String
-
-        if (cachedBrand != null) {
-            brandId = cachedBrand.id
-            brandName = cachedBrand.name
-        } else {
-            val brand = brandService.getBrand(product.brandId)
-            brandCacheManager.putDetail(product.brandId, BrandCacheInfo.from(brand))
-            brandId = brand.id
-            brandName = brand.name
-        }
+        val (brandId, brandName) = resolveBrand(product.brandId)
 
         val info = ProductDetailInfo(
             id = product.id,
@@ -58,5 +44,12 @@ class ProductFacade(
         return productsWithBrands.map { (product, brand) ->
             ProductDetailInfo.of(product, brand, product.likeCount)
         }
+    }
+
+    private fun resolveBrand(brandId: Long): Pair<Long, String> {
+        brandCacheManager.getDetail(brandId)?.let { return it.id to it.name }
+        val brand = brandService.getBrand(brandId)
+        brandCacheManager.putDetail(brandId, brand)
+        return brand.id to brand.name
     }
 }

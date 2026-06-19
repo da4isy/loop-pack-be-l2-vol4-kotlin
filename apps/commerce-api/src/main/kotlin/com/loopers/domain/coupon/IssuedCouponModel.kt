@@ -40,7 +40,7 @@ class IssuedCouponModel(
     var version: Long = 0
         protected set
 
-    fun use() {
+    fun use(now: ZonedDateTime = ZonedDateTime.now()) {
         if (status != CouponStatus.AVAILABLE) {
             throw CoreException(
                 errorType = ErrorType.BAD_REQUEST,
@@ -48,7 +48,7 @@ class IssuedCouponModel(
             )
         }
         status = CouponStatus.USED
-        usedAt = ZonedDateTime.now()
+        usedAt = now
     }
 
     fun isUsable(): Boolean = status == CouponStatus.AVAILABLE

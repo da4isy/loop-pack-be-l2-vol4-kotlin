@@ -1,5 +1,6 @@
 package com.loopers.application.coupon
 
+import com.loopers.domain.coupon.CouponTemplateModel
 import com.loopers.domain.coupon.CouponTemplateService
 import com.loopers.domain.coupon.IssuedCouponModel
 import com.loopers.domain.coupon.IssuedCouponService
@@ -22,14 +23,14 @@ class CouponFacade(
         if (couponSoldOutCacheManager.isSoldOut(couponTemplateId)) {
             throw CoreException(
                 errorType = ErrorType.BAD_REQUEST,
-                customMessage = "쿠폰 발급 수량이 모두 소진되었습니다.",
+                customMessage = CouponTemplateModel.SOLD_OUT_MESSAGE,
             )
         }
 
         try {
             return issuedCouponService.issue(userId, couponTemplateId)
         } catch (e: CoreException) {
-            if (e.customMessage?.contains("소진") == true) {
+            if (e.customMessage == CouponTemplateModel.SOLD_OUT_MESSAGE) {
                 couponSoldOutCacheManager.markSoldOut(couponTemplateId)
             }
             throw e

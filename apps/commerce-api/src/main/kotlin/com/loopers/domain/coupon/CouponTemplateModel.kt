@@ -73,12 +73,12 @@ class CouponTemplateModel(
         }
     }
 
-    fun isExpired(): Boolean = ZonedDateTime.now().isAfter(expiredAt)
+    fun isExpired(now: ZonedDateTime = ZonedDateTime.now()): Boolean = now.isAfter(expiredAt)
 
     fun isDeleted(): Boolean = deletedAt != null
 
-    fun validateUsable(orderAmount: Long) {
-        if (isExpired()) {
+    fun validateUsable(orderAmount: Long, now: ZonedDateTime = ZonedDateTime.now()) {
+        if (isExpired(now)) {
             throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "만료된 쿠폰입니다.")
         }
         if (minOrderAmount != null && orderAmount < minOrderAmount!!) {
@@ -95,12 +95,13 @@ class CouponTemplateModel(
      */
     fun issueOne() {
         if (totalQuantity != null && issuedCount >= totalQuantity!!) {
-            throw CoreException(
-                errorType = ErrorType.BAD_REQUEST,
-                customMessage = "쿠폰 발급 수량이 모두 소진되었습니다.",
-            )
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = SOLD_OUT_MESSAGE)
         }
         issuedCount++
+    }
+
+    companion object {
+        const val SOLD_OUT_MESSAGE = "쿠폰 발급 수량이 모두 소진되었습니다."
     }
 
     fun hasRemainingQuantity(): Boolean =

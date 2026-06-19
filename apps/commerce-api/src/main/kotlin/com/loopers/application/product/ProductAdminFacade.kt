@@ -3,6 +3,7 @@ package com.loopers.application.product
 import com.loopers.domain.brand.BrandService
 import com.loopers.domain.product.ProductModel
 import com.loopers.domain.product.ProductService
+import com.loopers.infrastructure.product.ProductCacheManager
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -10,14 +11,25 @@ import org.springframework.transaction.annotation.Transactional
 class ProductAdminFacade(
     private val productService: ProductService,
     private val brandService: BrandService,
+    private val productCacheManager: ProductCacheManager,
 ) {
 
-    /**
-     * 상품 등록 — 브랜드 존재 여부 검증 후 생성
-     */
     @Transactional
     fun createProduct(name: String, price: Long, stock: Long, brandId: Long): ProductModel {
-        brandService.getBrand(brandId) // 삭제된 브랜드면 NOT_FOUND
+        brandService.getBrand(brandId)
         return productService.create(name, price, stock, brandId)
+    }
+
+    @Transactional
+    fun updateProduct(id: Long, name: String, price: Long, stock: Long): ProductModel {
+        val product = productService.update(id, name, price, stock)
+        productCacheManager.evictDetail(id)
+        return product
+    }
+
+    @Transactional
+    fun deleteProduct(id: Long) {
+        productService.delete(id)
+        productCacheManager.evictDetail(id)
     }
 }

@@ -52,7 +52,7 @@ class BrandAdminV1Controller(
         @PathVariable brandId: Long,
         @RequestBody request: BrandAdminV1Dto.UpdateBrandRequest,
     ): ApiResponse<BrandAdminV1Dto.BrandResponse> {
-        return brandService.update(brandId, request.name)
+        return brandAdminFacade.updateBrand(brandId, request.name)
             .let { BrandAdminV1Dto.BrandResponse.from(it) }
             .let { ApiResponse.success(it) }
     }
