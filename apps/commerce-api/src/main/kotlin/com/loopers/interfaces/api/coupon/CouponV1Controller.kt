@@ -1,7 +1,6 @@
 package com.loopers.interfaces.api.coupon
 
 import com.loopers.application.coupon.CouponFacade
-import com.loopers.domain.coupon.IssuedCouponService
 import com.loopers.domain.user.UserService
 import com.loopers.interfaces.api.ApiResponse
 import org.springframework.data.domain.PageRequest
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class CouponV1Controller(
-    private val issuedCouponService: IssuedCouponService,
     private val couponFacade: CouponFacade,
     private val userService: UserService,
 ) {
@@ -26,7 +24,7 @@ class CouponV1Controller(
         @PathVariable couponId: Long,
     ): ApiResponse<CouponAdminV1Dto.IssuedCouponResponse> {
         val user = userService.getMe(loginId, password)
-        val issued = issuedCouponService.issue(user.id, couponId)
+        val issued = couponFacade.issueCoupon(user.id, couponId)
         return ApiResponse.success(CouponAdminV1Dto.IssuedCouponResponse.from(issued))
     }
 
