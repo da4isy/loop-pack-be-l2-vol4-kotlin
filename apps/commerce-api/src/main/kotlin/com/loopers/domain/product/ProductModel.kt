@@ -5,10 +5,17 @@ import com.loopers.support.error.CoreException
 import com.loopers.support.error.ErrorType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "products")
+@Table(
+    name = "products",
+    indexes = [
+        Index(name = "idx_products_deleted_created", columnList = "deleted_at, created_at"),
+        Index(name = "idx_products_brand_deleted_price", columnList = "brand_id, deleted_at, price"),
+    ],
+)
 class ProductModel(
     name: String,
     price: Long,
