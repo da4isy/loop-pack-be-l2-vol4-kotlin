@@ -25,9 +25,9 @@ class ProductRepositoryImpl(
     override fun findAll(brandId: Long?, sortType: ProductSortType, pageable: Pageable): Page<ProductModel> {
         if (sortType == ProductSortType.LIKES_DESC) {
             return if (brandId != null) {
-                productJpaRepository.findAllByBrandIdOrderByLikeCountDesc(brandId, pageable)
+                productJpaRepository.findAllByBrandIdAndDeletedAtIsNullOrderByLikeCountDescCreatedAtDesc(brandId, pageable)
             } else {
-                productJpaRepository.findAllOrderByLikeCountDesc(pageable)
+                productJpaRepository.findAllByDeletedAtIsNullOrderByLikeCountDescCreatedAtDesc(pageable)
             }
         }
 
@@ -44,4 +44,8 @@ class ProductRepositoryImpl(
             productJpaRepository.findAllByDeletedAtIsNull(sortedPageable)
         }
     }
+
+    override fun incrementLikeCount(id: Long) = productJpaRepository.incrementLikeCount(id)
+
+    override fun decrementLikeCount(id: Long) = productJpaRepository.decrementLikeCount(id)
 }
