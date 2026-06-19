@@ -7,8 +7,10 @@ import com.loopers.domain.order.OrderCreationService
 import com.loopers.domain.order.OrderService
 import com.loopers.domain.order.PaymentClient
 import com.loopers.domain.product.ProductService
+import com.loopers.support.cache.ProductCacheEvictEvent
 import com.loopers.support.error.CoreException
 import com.loopers.support.error.ErrorType
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,6 +23,7 @@ class OrderFacade(
     private val paymentClient: PaymentClient,
     private val issuedCouponService: IssuedCouponService,
     private val couponTemplateService: CouponTemplateService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
 
     /**
@@ -67,6 +70,10 @@ class OrderFacade(
 
         // 5. 저장
         val savedOrder = orderService.createOrder(order)
+
+        // 6. 재고 변경된 상품 캐시 무효화
+        items.forEach { eventPublisher.publishEvent(ProductCacheEvictEvent(it.productId)) }
+
         return OrderDetailInfo.from(savedOrder)
     }
 }
