@@ -15,6 +15,7 @@ import jakarta.persistence.Table
         Index(name = "idx_products_deleted_created", columnList = "deleted_at, created_at"),
         Index(name = "idx_products_brand_deleted_price", columnList = "brand_id, deleted_at, price"),
         Index(name = "idx_products_deleted_likecount", columnList = "deleted_at, like_count, created_at"),
+        Index(name = "idx_products_brand_deleted_likecount", columnList = "brand_id, deleted_at, like_count, created_at"),
     ],
 )
 class ProductModel(
