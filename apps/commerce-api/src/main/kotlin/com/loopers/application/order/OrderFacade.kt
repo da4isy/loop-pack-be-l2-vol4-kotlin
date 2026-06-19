@@ -8,8 +8,6 @@ import com.loopers.domain.order.OrderService
 import com.loopers.domain.order.PaymentClient
 import com.loopers.domain.product.ProductService
 import com.loopers.infrastructure.product.ProductCacheManager
-import com.loopers.support.error.CoreException
-import com.loopers.support.error.ErrorType
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -55,13 +53,7 @@ class OrderFacade(
             order.applyCoupon(couponId = issuedCoupon.id, discountAmount = discountAmount)
         }
 
-        val paymentResult = paymentClient.pay(order.totalPrice)
-        if (!paymentResult.success) {
-            throw CoreException(
-                errorType = ErrorType.INTERNAL_ERROR,
-                customMessage = "결제에 실패했습니다.",
-            )
-        }
+        paymentClient.pay(order.totalPrice).ensureSuccess()
 
         val savedOrder = orderService.createOrder(order)
 
