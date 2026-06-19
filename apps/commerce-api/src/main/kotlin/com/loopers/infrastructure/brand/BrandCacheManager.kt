@@ -1,6 +1,8 @@
 package com.loopers.infrastructure.brand
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import com.loopers.config.redis.RedisConfig
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.RedisTemplate
@@ -21,17 +23,28 @@ class BrandCacheManager(
         private const val DETAIL_JITTER_SECONDS = 60L
     }
 
+    private val localCache: Cache<Long, BrandCacheInfo> = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofMinutes(10))
+        .maximumSize(200)
+        .build()
+
     fun getDetail(brandId: Long): BrandCacheInfo? {
+        localCache.getIfPresent(brandId)?.let { return it }
+
         return try {
             val key = "$DETAIL_KEY_PREFIX$brandId"
             val cached = redisTemplate.opsForValue().get(key) ?: return null
-            objectMapper.readValue(cached, BrandCacheInfo::class.java)
+            val info = objectMapper.readValue(cached, BrandCacheInfo::class.java)
+            localCache.put(brandId, info)
+            info
         } catch (e: Exception) {
             null
         }
     }
 
     fun putDetail(brandId: Long, info: BrandCacheInfo) {
+        localCache.put(brandId, info)
+
         try {
             val key = "$DETAIL_KEY_PREFIX$brandId"
             val json = objectMapper.writeValueAsString(info)
@@ -41,6 +54,8 @@ class BrandCacheManager(
     }
 
     fun evictDetail(brandId: Long) {
+        localCache.invalidate(brandId)
+
         try {
             redisTemplate.delete("$DETAIL_KEY_PREFIX$brandId")
         } catch (_: Exception) {
