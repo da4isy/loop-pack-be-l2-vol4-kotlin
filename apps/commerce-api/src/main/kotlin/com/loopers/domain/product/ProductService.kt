@@ -67,6 +67,16 @@ class ProductService(
     }
 
     @Transactional
+    fun incrementLikeCount(id: Long) {
+        productRepository.incrementLikeCount(id)
+    }
+
+    @Transactional
+    fun decrementLikeCount(id: Long) {
+        productRepository.decrementLikeCount(id)
+    }
+
+    @Transactional
     fun deleteByBrandId(brandId: Long) {
         val products = productRepository.findAll(
             brandId,

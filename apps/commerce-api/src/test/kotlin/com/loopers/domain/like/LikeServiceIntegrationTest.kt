@@ -30,7 +30,7 @@ class LikeServiceIntegrationTest @Autowired constructor(
             every { likeRepository.existsByUserIdAndProductId(1L, 10L) } returns false
             every { likeRepository.save(any()) } answers { firstArg() }
 
-            likeService.like(1L, 10L)
+            likeService.like(1L, 10L) shouldBe true
 
             verify(exactly = 1) { likeRepository.save(any()) }
         }
@@ -39,7 +39,7 @@ class LikeServiceIntegrationTest @Autowired constructor(
         fun idempotent_whenAlreadyLiked() {
             every { likeRepository.existsByUserIdAndProductId(1L, 10L) } returns true
 
-            likeService.like(1L, 10L)
+            likeService.like(1L, 10L) shouldBe false
 
             verify(exactly = 0) { likeRepository.save(any()) }
         }
@@ -50,11 +50,18 @@ class LikeServiceIntegrationTest @Autowired constructor(
 
         @Test
         fun success_whenLiked() {
-            every { likeRepository.deleteByUserIdAndProductId(1L, 10L) } returns Unit
+            every { likeRepository.deleteByUserIdAndProductId(1L, 10L) } returns 1L
 
-            likeService.unlike(1L, 10L)
+            likeService.unlike(1L, 10L) shouldBe true
 
             verify(exactly = 1) { likeRepository.deleteByUserIdAndProductId(1L, 10L) }
+        }
+
+        @Test
+        fun returnsFalse_whenNotLiked() {
+            every { likeRepository.deleteByUserIdAndProductId(1L, 10L) } returns 0L
+
+            likeService.unlike(1L, 10L) shouldBe false
         }
     }
 

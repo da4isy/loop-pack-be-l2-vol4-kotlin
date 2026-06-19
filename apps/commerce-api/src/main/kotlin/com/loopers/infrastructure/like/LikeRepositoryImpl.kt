@@ -18,8 +18,8 @@ class LikeRepositoryImpl(
         likeJpaRepository.existsByUserIdAndProductId(userId, productId)
 
     @Transactional
-    override fun deleteByUserIdAndProductId(userId: Long, productId: Long) {
-        likeJpaRepository.deleteByUserIdAndProductId(userId, productId)
+    override fun deleteByUserIdAndProductId(userId: Long, productId: Long): Long {
+        return likeJpaRepository.deleteByUserIdAndProductId(userId, productId)
     }
 
     override fun countByProductId(productId: Long): Long =

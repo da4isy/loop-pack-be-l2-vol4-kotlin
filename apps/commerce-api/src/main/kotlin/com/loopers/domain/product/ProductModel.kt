@@ -14,6 +14,7 @@ import jakarta.persistence.Table
     indexes = [
         Index(name = "idx_products_deleted_created", columnList = "deleted_at, created_at"),
         Index(name = "idx_products_brand_deleted_price", columnList = "brand_id, deleted_at, price"),
+        Index(name = "idx_products_deleted_likecount", columnList = "deleted_at, like_count, created_at"),
     ],
 )
 class ProductModel(
@@ -37,6 +38,10 @@ class ProductModel(
 
     @Column(name = "brand_id", nullable = false)
     var brandId: Long = brandId
+        protected set
+
+    @Column(name = "like_count", nullable = false)
+    var likeCount: Long = 0
         protected set
 
     init {

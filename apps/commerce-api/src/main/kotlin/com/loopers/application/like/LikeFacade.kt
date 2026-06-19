@@ -5,6 +5,7 @@ import com.loopers.domain.product.ProductService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class LikeFacade(
@@ -12,13 +13,17 @@ class LikeFacade(
     private val productService: ProductService,
 ) {
 
+    @Transactional
     fun like(userId: Long, productId: Long) {
         productService.getProduct(productId)
-        likeService.like(userId, productId)
+        val created = likeService.like(userId, productId)
+        if (created) productService.incrementLikeCount(productId)
     }
 
+    @Transactional
     fun unlike(userId: Long, productId: Long) {
-        likeService.unlike(userId, productId)
+        val deleted = likeService.unlike(userId, productId)
+        if (deleted) productService.decrementLikeCount(productId)
     }
 
     fun getMyLikes(userId: Long, pageable: Pageable): Page<LikeInfo> {
