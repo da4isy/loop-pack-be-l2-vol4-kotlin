@@ -23,4 +23,7 @@ class CouponTemplateRepositoryImpl(
 
     override fun findAll(pageable: Pageable): Page<CouponTemplateModel> =
         couponTemplateJpaRepository.findAllByDeletedAtIsNull(pageable)
+
+    override fun findAllByIds(ids: List<Long>): List<CouponTemplateModel> =
+        couponTemplateJpaRepository.findAllById(ids)
 }

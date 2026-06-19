@@ -8,4 +8,5 @@ interface CouponTemplateRepository {
     fun findById(id: Long): CouponTemplateModel?
     fun findByIdWithLock(id: Long): CouponTemplateModel?
     fun findAll(pageable: Pageable): Page<CouponTemplateModel>
+    fun findAllByIds(ids: List<Long>): List<CouponTemplateModel>
 }
