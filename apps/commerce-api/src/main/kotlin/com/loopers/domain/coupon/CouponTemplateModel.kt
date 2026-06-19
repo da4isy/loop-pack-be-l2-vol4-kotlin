@@ -77,6 +77,18 @@ class CouponTemplateModel(
 
     fun isDeleted(): Boolean = deletedAt != null
 
+    fun validateUsable(orderAmount: Long) {
+        if (isExpired()) {
+            throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "만료된 쿠폰입니다.")
+        }
+        if (minOrderAmount != null && orderAmount < minOrderAmount!!) {
+            throw CoreException(
+                errorType = ErrorType.BAD_REQUEST,
+                customMessage = "최소 주문 금액(${minOrderAmount}원)을 충족하지 않습니다.",
+            )
+        }
+    }
+
     /**
      * 선착순 쿠폰 발급 — 수량 1 차감
      * totalQuantity가 null이면 무제한 발급

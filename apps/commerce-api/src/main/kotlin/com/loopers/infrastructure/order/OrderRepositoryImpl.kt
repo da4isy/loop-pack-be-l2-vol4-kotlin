@@ -4,7 +4,6 @@ import com.loopers.domain.order.OrderModel
 import com.loopers.domain.order.OrderRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.time.ZonedDateTime
 
@@ -15,7 +14,7 @@ class OrderRepositoryImpl(
 
     override fun save(order: OrderModel): OrderModel = orderJpaRepository.save(order)
 
-    override fun findById(id: Long): OrderModel? = orderJpaRepository.findByIdOrNull(id)
+    override fun findById(id: Long): OrderModel? = orderJpaRepository.findByIdWithItems(id)
 
     override fun findAllByUserId(
         userId: Long,

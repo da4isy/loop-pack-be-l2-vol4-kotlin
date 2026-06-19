@@ -53,7 +53,7 @@ class CouponTemplateService(
     @Transactional(readOnly = true)
     fun getByIds(ids: List<Long>): Map<Long, CouponTemplateModel> {
         if (ids.isEmpty()) return emptyMap()
-        return ids.mapNotNull { couponTemplateRepository.findById(it) }.associateBy { it.id }
+        return couponTemplateRepository.findAllByIds(ids).associateBy { it.id }
     }
 
     @Transactional

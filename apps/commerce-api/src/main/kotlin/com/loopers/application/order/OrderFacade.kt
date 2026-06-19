@@ -47,19 +47,8 @@ class OrderFacade(
             issuedCoupon.validateOwner(userId)
 
             val template = couponTemplateService.getById(issuedCoupon.couponTemplateId)
-            if (template.isExpired()) {
-                throw CoreException(errorType = ErrorType.BAD_REQUEST, customMessage = "만료된 쿠폰입니다.")
-            }
-
             val originalPrice = order.calculateTotalPrice()
-
-            // 최소 주문 금액 체크
-            if (template.minOrderAmount != null && originalPrice < template.minOrderAmount!!) {
-                throw CoreException(
-                    errorType = ErrorType.BAD_REQUEST,
-                    customMessage = "최소 주문 금액(${template.minOrderAmount}원)을 충족하지 않습니다.",
-                )
-            }
+            template.validateUsable(originalPrice)
 
             discountAmount = template.calculateDiscount(originalPrice)
             issuedCoupon.use()
