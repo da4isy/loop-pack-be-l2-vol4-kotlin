@@ -1,6 +1,6 @@
 package com.loopers.domain.payment
 
-enum class TransactionStatus {
+enum class PaymentStatus {
     PENDING,
     SUCCESS,
     FAILED,
