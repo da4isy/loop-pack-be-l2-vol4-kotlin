@@ -2,6 +2,7 @@ package com.loopers.application.product
 
 import com.loopers.domain.brand.BrandModel
 import com.loopers.domain.product.ProductModel
+import com.loopers.infrastructure.product.ProductCacheInfo
 
 data class ProductDetailInfo(
     val id: Long,
@@ -22,6 +23,18 @@ data class ProductDetailInfo(
                 brandId = brand.id,
                 brandName = brand.name,
                 likeCount = likeCount,
+            )
+        }
+
+        fun from(cache: ProductCacheInfo): ProductDetailInfo {
+            return ProductDetailInfo(
+                id = cache.id,
+                name = cache.name,
+                price = cache.price,
+                stock = cache.stock,
+                brandId = cache.brandId,
+                brandName = cache.brandName,
+                likeCount = cache.likeCount,
             )
         }
     }

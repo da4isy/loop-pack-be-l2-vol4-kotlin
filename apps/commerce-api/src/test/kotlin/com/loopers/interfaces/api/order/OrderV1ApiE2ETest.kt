@@ -55,12 +55,12 @@ class OrderV1ApiE2ETest @Autowired constructor(
                 " VALUES (1, '나이키', NOW(), NOW())",
         )
         jdbcTemplate.execute(
-            "INSERT INTO products (id, name, price, stock, brand_id, created_at, updated_at)" +
-                " VALUES (1, '에어맥스', 129000, 50, 1, NOW(), NOW())",
+            "INSERT INTO products (id, name, price, stock, brand_id, like_count, created_at, updated_at)" +
+                " VALUES (1, '에어맥스', 129000, 50, 1, 0, NOW(), NOW())",
         )
         jdbcTemplate.execute(
-            "INSERT INTO products (id, name, price, stock, brand_id, created_at, updated_at)" +
-                " VALUES (2, '에어포스', 109000, 30, 1, NOW(), NOW())",
+            "INSERT INTO products (id, name, price, stock, brand_id, like_count, created_at, updated_at)" +
+                " VALUES (2, '에어포스', 109000, 30, 1, 0, NOW(), NOW())",
         )
     }
 

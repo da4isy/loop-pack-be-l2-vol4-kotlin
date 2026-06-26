@@ -7,8 +7,7 @@ import com.loopers.domain.order.OrderCreationService
 import com.loopers.domain.order.OrderService
 import com.loopers.domain.order.PaymentClient
 import com.loopers.domain.product.ProductService
-import com.loopers.support.error.CoreException
-import com.loopers.support.error.ErrorType
+import com.loopers.infrastructure.product.ProductCacheManager
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,6 +20,7 @@ class OrderFacade(
     private val paymentClient: PaymentClient,
     private val issuedCouponService: IssuedCouponService,
     private val couponTemplateService: CouponTemplateService,
+    private val productCacheManager: ProductCacheManager,
 ) {
 
     /**
@@ -28,11 +28,9 @@ class OrderFacade(
      */
     @Transactional
     fun createOrder(userId: Long, items: List<OrderItemCommand>, couponId: Long?): OrderDetailInfo {
-        // 1. 상품 조회 (비관적 락 — 재고 차감 동시성 방지) · 브랜드 조회
         val products = items.map { productService.getProductWithLock(it.productId) }
         val brands = brandService.getBrandsByIds(products.map { it.brandId }.distinct())
 
-        // 2. 주문 생성 + 재고 차감 (도메인 서비스)
         val order = orderCreationService.buildOrder(
             userId = userId,
             products = products,
@@ -40,7 +38,6 @@ class OrderFacade(
             quantities = items.map { it.quantity },
         )
 
-        // 3. 쿠폰 검증 + 할인 적용
         var discountAmount = 0L
         if (couponId != null) {
             val issuedCoupon = issuedCouponService.getById(couponId)
@@ -56,17 +53,12 @@ class OrderFacade(
             order.applyCoupon(couponId = issuedCoupon.id, discountAmount = discountAmount)
         }
 
-        // 4. 결제
-        val paymentResult = paymentClient.pay(order.totalPrice)
-        if (!paymentResult.success) {
-            throw CoreException(
-                errorType = ErrorType.INTERNAL_ERROR,
-                customMessage = "결제에 실패했습니다.",
-            )
-        }
+        paymentClient.pay(order.totalPrice).ensureSuccess()
 
-        // 5. 저장
         val savedOrder = orderService.createOrder(order)
+
+        items.forEach { productCacheManager.evictDetail(it.productId) }
+
         return OrderDetailInfo.from(savedOrder)
     }
 }

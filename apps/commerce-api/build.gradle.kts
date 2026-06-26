@@ -10,6 +10,9 @@ dependencies {
     implementation(project(":supports:logging"))
     implementation(project(":supports:monitoring"))
 
+    // local cache
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+
     // password encoder
     implementation("at.favre.lib:bcrypt:0.10.2")
 

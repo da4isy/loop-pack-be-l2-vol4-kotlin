@@ -2,23 +2,36 @@ package com.loopers.application.like
 
 import com.loopers.domain.like.LikeService
 import com.loopers.domain.product.ProductService
+import com.loopers.infrastructure.product.ProductCacheManager
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class LikeFacade(
     private val likeService: LikeService,
     private val productService: ProductService,
+    private val productCacheManager: ProductCacheManager,
 ) {
 
+    @Transactional
     fun like(userId: Long, productId: Long) {
         productService.getProduct(productId)
-        likeService.like(userId, productId)
+        val created = likeService.like(userId, productId)
+        if (created) {
+            productService.incrementLikeCount(productId)
+            productCacheManager.evictDetail(productId)
+        }
     }
 
+    @Transactional
     fun unlike(userId: Long, productId: Long) {
-        likeService.unlike(userId, productId)
+        val deleted = likeService.unlike(userId, productId)
+        if (deleted) {
+            productService.decrementLikeCount(productId)
+            productCacheManager.evictDetail(productId)
+        }
     }
 
     fun getMyLikes(userId: Long, pageable: Pageable): Page<LikeInfo> {

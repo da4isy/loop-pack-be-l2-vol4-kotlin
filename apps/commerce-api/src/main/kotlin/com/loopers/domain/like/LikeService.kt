@@ -12,18 +12,19 @@ class LikeService(
 ) {
 
     @Transactional
-    fun like(userId: Long, productId: Long) {
-        if (likeRepository.existsByUserIdAndProductId(userId, productId)) return
-        try {
+    fun like(userId: Long, productId: Long): Boolean {
+        if (likeRepository.existsByUserIdAndProductId(userId, productId)) return false
+        return try {
             likeRepository.save(LikeModel(userId = userId, productId = productId))
+            true
         } catch (e: DataIntegrityViolationException) {
-            // unique constraint 위반 → 이미 좋아요 존재, 멱등 처리
+            false
         }
     }
 
     @Transactional
-    fun unlike(userId: Long, productId: Long) {
-        likeRepository.deleteByUserIdAndProductId(userId, productId)
+    fun unlike(userId: Long, productId: Long): Boolean {
+        return likeRepository.deleteByUserIdAndProductId(userId, productId) > 0
     }
 
     @Transactional(readOnly = true)

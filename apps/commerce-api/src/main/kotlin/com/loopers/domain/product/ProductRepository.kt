@@ -9,4 +9,6 @@ interface ProductRepository {
     fun findByIdWithLock(id: Long): ProductModel?
     fun findAllByIds(ids: List<Long>): List<ProductModel>
     fun findAll(brandId: Long?, sortType: ProductSortType, pageable: Pageable): Page<ProductModel>
+    fun incrementLikeCount(id: Long)
+    fun decrementLikeCount(id: Long)
 }

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query
 
 interface LikeJpaRepository : JpaRepository<LikeModel, Long> {
     fun existsByUserIdAndProductId(userId: Long, productId: Long): Boolean
-    fun deleteByUserIdAndProductId(userId: Long, productId: Long)
+    fun deleteByUserIdAndProductId(userId: Long, productId: Long): Long
     fun countByProductId(productId: Long): Long
     fun findAllByUserIdOrderByCreatedAtDesc(userId: Long, pageable: Pageable): Page<LikeModel>
 

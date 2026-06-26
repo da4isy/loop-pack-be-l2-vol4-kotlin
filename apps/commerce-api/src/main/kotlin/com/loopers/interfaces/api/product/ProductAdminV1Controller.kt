@@ -59,14 +59,14 @@ class ProductAdminV1Controller(
         @PathVariable productId: Long,
         @RequestBody request: ProductAdminV1Dto.UpdateProductRequest,
     ): ApiResponse<ProductAdminV1Dto.ProductResponse> {
-        return productService.update(productId, request.name, request.price, request.stock)
+        return productAdminFacade.updateProduct(productId, request.name, request.price, request.stock)
             .let { ProductAdminV1Dto.ProductResponse.from(it) }
             .let { ApiResponse.success(it) }
     }
 
     @DeleteMapping("/{productId}")
     fun deleteProduct(@PathVariable productId: Long): ApiResponse<Unit> {
-        productService.delete(productId)
+        productAdminFacade.deleteProduct(productId)
         return ApiResponse.success(Unit)
     }
 }
